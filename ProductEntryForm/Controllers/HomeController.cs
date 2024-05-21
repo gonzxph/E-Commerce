@@ -212,19 +212,28 @@ namespace ProductEntryForm.Controllers
                 using (var cmd = db.CreateCommand())
                 {
                     cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = "SELECT FIRSTNAME FROM IMAGE WHERE ID = @id";
+                    cmd.CommandText = "SELECT * FROM PRODUCT WHERE ID = @id";
                     cmd.Parameters.AddWithValue("@id", id);
 
                     using (var reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            var studentData = new
+                            var prod_data = new
                             {
+                                id = reader["ID"].ToString(),
                                 name = reader["NAME"].ToString(),
-                                price = reader["PRICE"].ToString()
+                                price = reader["PRICE"].ToString(),
+                                desc = reader["DESCRIPTION"].ToString(),
+                                isbn = reader["ISBN"].ToString(),
+                                pub = reader["PUBLISHER"].ToString(),
+                                page = reader["PAGE"].ToString(),
+                                weight = reader["WEIGHT"].ToString(),
+                                dimension = reader["DIMENSION"].ToString(),
+                                stock = reader["STOCK"].ToString(),
+                                image = reader["IMAGE"].ToString(),
                             };
-                            return Json(studentData, JsonRequestBehavior.AllowGet);
+                            return Json(prod_data, JsonRequestBehavior.AllowGet);
                         }
                         else
                         {
@@ -238,8 +247,17 @@ namespace ProductEntryForm.Controllers
         public ActionResult StudentUpdate()
         {
             var data = new List<object>();
-            var idno = Request["search_id"];
-            var fname = Request["firstname"];
+            var idno = Request["id"];
+            var name = Request["name"];
+            var price = Request["price"];
+            var desc = Request["desc"];
+            var isbn = Request["isbn"];
+            var pub = Request["pub"];
+            var page = Request["page"];
+            var weight = Request["weight"];
+            var dimension = Request["dimnesion"];
+            var stock = Request["stock"];
+            var image = Request["image"];
 
             using (var db = new SqlConnection(connStr))
             {
@@ -247,9 +265,18 @@ namespace ProductEntryForm.Controllers
                 using (var cmd = db.CreateCommand())
                 {
                     cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = "UPDATE IMAGE SET FIRSTNAME = @fname WHERE ID = @id";
-                    cmd.Parameters.AddWithValue("@fname", fname);
-                    cmd.Parameters.AddWithValue("@id", idno);
+                    cmd.CommandText = "UPDATE IMAGE SET NAME = @name, PRICE = @price, DESCRIPTION= @desc, ISBN = @isbn,  PUBLISHER = @pub, PAGE = @page, WEIGHT = @weight, DIMENSION = @dimension, STOCK = @stock, IMAGE = @image" +
+                                        "WHERE ID = @id";
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@price", price);
+                    cmd.Parameters.AddWithValue("@desc", desc);
+                    cmd.Parameters.AddWithValue("@isbn", isbn);
+                    cmd.Parameters.AddWithValue("@pub", pub);
+                    cmd.Parameters.AddWithValue("@page", page);
+                    cmd.Parameters.AddWithValue("@weight", weight);
+                    cmd.Parameters.AddWithValue("@dimension", dimension);
+                    cmd.Parameters.AddWithValue("@stock", stock);
+                    cmd.Parameters.AddWithValue("@image", image);
                     var ctr = cmd.ExecuteNonQuery();
                     if (ctr > 0)
                     {

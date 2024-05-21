@@ -9,7 +9,7 @@
             data: { id: id },
             success: function (response) {
                 // On success, remove the row from the table
-                row.remove();
+
             },
             error: function (error) {
                 // On error, display an alert
@@ -23,7 +23,6 @@
         var data = new FormData();
         data.append('insert_file', $('#insert_file')[0].files[0]);
         data.append('firstname', $('#firstname').val());
-        data.append('search_id', $('#search_id').val());
 
         $.ajax({
             url: '../Home/StudentUpdate',
