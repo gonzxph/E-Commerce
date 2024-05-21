@@ -1,0 +1,76 @@
+﻿
+@{
+    ViewBag.Title = "Product";
+}
+
+<html>
+    <head>
+        <title></title>
+        <style>
+            .form-container{
+                width: 500px;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Book Product Entry Form</h2>
+
+
+        <div class="container">
+            <div class="form-container">
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="name">Title</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="" />
+                        </div>
+                        <div class="form-group">
+                            <label for="descript">Book Description</label>
+                            <textarea class=" form-control" id="descript" name="descript"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="isbn">ISBN</label>
+                            <input type="number" class="form-control" id="isbn" name="isbn">
+                        </div>
+                        <div class="form-group">
+                            <label for="weight">Weight</label>
+                            <input type="text" class="form-control" id="weight" name="weight">
+                        </div>
+                        <div class="form-group">
+                            <label for="img">Upload image</label>
+                            <input type="file" class="form-control" id="img" name="img"/>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="price">Price</label>
+                            <input class="form-control" type="number" id="price" name="price" />
+                        </div>
+                        <div class="form-group">
+                            <label for="pub">Publisher</label>
+                            <input type="text" class="form-control" id="pub" name="pub">
+                        </div>
+                        <div class="form-group">
+                            <label for="page">Pages</label>
+                            <input type="number" class="form-control" id="page" name="page">
+                        </div>
+                        <div class="form-group">
+                            <label for="demin">Dimensions (WxHxD)</label>
+                            <input type="text" class="form-control" id="dimen" name="dimen">
+                        </div>
+                        <div class="form-group">
+                            <label for="stock">Quantity</label>
+                            <input type="number" class="form-control" id="stock" name="stock">
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <button type="submit" id="btn" class="btn btn-primary mb-2">Submit</button>
+            </div>
+        </div>
+
+        <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
+        <script src="~/Scripts/myScript/product.js"></script>
+    </body>
+</html>
+

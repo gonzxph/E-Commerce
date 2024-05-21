@@ -1,0 +1,251 @@
+﻿@using System.Web;
+@using System.Web.Mvc;
+@using System.Data;
+@using System.Data.SqlClient;
+@using System.IO;
+@using System.Drawing;
+@using System.Drawing.Imaging;
+@using System.Web.Services;
+@{
+    ViewBag.Title = "Admin_Dashboard";
+}
+
+<html>
+<head>
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h2>Admin_Dashboard</h2>
+
+
+    <div class="text-end">
+        <button type="button" class="btn btn-primary my-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            Add Product
+        </button>
+    </div>
+
+
+    <!-- add product modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Add Product</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="form-container">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="name">Title</label>
+                                        <input type="text" class="form-control" id="name" name="name" placeholder="" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="descript">Book Description</label>
+                                        <textarea class=" form-control" id="descript" name="descript"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="isbn">ISBN</label>
+                                        <input type="number" class="form-control" id="isbn" name="isbn">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="weight">Weight</label>
+                                        <input type="text" class="form-control" id="weight" name="weight">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="img">Upload image</label>
+                                        <input type="file" class="form-control" id="img" name="img" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="price">Price</label>
+                                        <input class="form-control" type="number" id="price" name="price" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pub">Publisher</label>
+                                        <input type="text" class="form-control" id="pub" name="pub">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="page">Pages</label>
+                                        <input type="number" class="form-control" id="page" name="page">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="demin">Dimensions (WxHxD)</label>
+                                        <input type="text" class="form-control" id="dimen" name="dimen">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="stock">Quantity</label>
+                                        <input type="number" class="form-control" id="stock" name="stock">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnClose" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="btnAddProd">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--update modal-->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container">
+                        <div class="form-container">
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="name">Title</label>
+                                        <input type="text" class="form-control" id="name" name="name" placeholder="" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="descript">Book Description</label>
+                                        <textarea class=" form-control" id="descript" name="descript"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="isbn">ISBN</label>
+                                        <input type="number" class="form-control" id="isbn" name="isbn">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="weight">Weight</label>
+                                        <input type="text" class="form-control" id="weight" name="weight">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="img">Upload image</label>
+                                        <input type="file" class="form-control" id="img" name="img" />
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="form-group">
+                                        <label for="price">Price</label>
+                                        <input class="form-control" type="number" id="price" name="price" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pub">Publisher</label>
+                                        <input type="text" class="form-control" id="pub" name="pub">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="page">Pages</label>
+                                        <input type="number" class="form-control" id="page" name="page">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="demin">Dimensions (WxHxD)</label>
+                                        <input type="text" class="form-control" id="dimen" name="dimen">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="stock">Quantity</label>
+                                        <input type="number" class="form-control" id="stock" name="stock">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnClose" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--delete modal-->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="btnNo" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-danger" id="btnYes"  data-bs-dismiss="modal">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @{
+        string conn = @"Data Source=localhost\mssqlserver04;Initial Catalog=student;Integrated Security=True";
+        using (var db = new SqlConnection(conn))
+        {
+            db.Open();
+            using (var cmd = db.CreateCommand())
+            {
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "SELECT * FROM PRODUCT";
+                using (var reader = cmd.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+
+
+                        <table border="1" id="datatable" class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th width="5%">ID</th>
+                                    <th width="10%">Product Name</th>
+                                    <th width="10%">Description</th>
+                                    <th width="10%">Image</th>
+                                    <th width="10%">ISBN</th>
+                                    <th width="5%">Page</th>
+                                    <th width="10%">Publisher</th>
+                                    <th width="10%">Weight</th>
+                                    <th width="10%">Dimension</th>
+                                    <th width="5%">Stock</th>
+                                    <th width="5%">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @while (reader.Read())
+                                {
+                                    <tr class="items">
+                                        <td class="prod-id">@reader["ID"]</td>
+                                        <td>@reader["NAME"]</td>
+                                        <td>@reader["DESCRIPTION"]</td>
+                                        <td style="text-align: center">
+                                            <img src="../Home/Image?filename=@HttpUtility.UrlEncode(reader["IMAGE"] + "")" width="50%" />
+                                        </td>
+                                        <td>@reader["ISBN"]</td>
+                                        <td>@reader["PAGE"]</td>
+                                        <td>@reader["PUBLISHER"]</td>
+                                        <td>@reader["WEIGHT"]</td>
+                                        <td>@reader["DIMENSION"]</td>
+                                        <td>@reader["STOCK"]</td>
+                                        <td>@reader["PRICE"]</td>
+                                        <td><button type="button" class="btn btn-primary btn-up" data-bs-toggle="modal" data-bs-target="#updateModal">Update</button></td>
+                                        <td><button class="btn btn-danger btn-del" id="btnDel" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                }
+            }
+        }
+    }
+
+
+    <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
+    <script src="~/Scripts/myScript/deleteproduct.js"></script>
+    <script src="~/Scripts/myScript/product.js"></script>
+</body>
+</html>
