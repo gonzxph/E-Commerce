@@ -1,9 +1,9 @@
 ﻿$().ready(function () {
-    $("#btnDel").click(function () {
+    $(".btn-del").click(function () {
         var row = $(this).closest('tr')
         var id = row.find('.prod-id').text()
 
-        $('#btnYes').click(function () {
+        $('.btnDelYes').click(function () {
           
             $.ajax({
                 url: '../Home/DeleteProduct',

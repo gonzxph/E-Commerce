@@ -167,6 +167,7 @@
     <Content Include="Scripts\myScript\customer.js" />
     <Content Include="Scripts\myScript\deleteproduct.js" />
     <Content Include="Scripts\myScript\product.js" />
+    <Content Include="Scripts\myScript\searchproduct.js" />
     <Content Include="Scripts\myScript\updateproduct.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

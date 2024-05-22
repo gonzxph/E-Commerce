@@ -1,14 +1,15 @@
 ﻿$().ready(function () {
-    $('#btnUp').click(function () {
+    $('.btnUp').click(function () {
         var row = $(this).closest('tr')
         var id = row.find('.prod-id').text()
 
         $.ajax({
-            url: '../Home/GetProduct',
+            url: '../Home/UpdateProduct',
             type: 'GET',
             data: { id: id },
-            success: function (response) {
-                // On success, remove the row from the table
+            success: function (prod_data) {
+                console.log(prod_data)
+                $('#upname').val(prod_data[0].name);
 
             },
             error: function (error) {
@@ -16,10 +17,10 @@
                 alert('Error deleting product: ' + error.responseText);
             }
         })
-
-
     })
-    $('#button').click(function () {
+
+
+    $('#btnUpChange').click(function () {
         var data = new FormData();
         data.append('insert_file', $('#insert_file')[0].files[0]);
         data.append('firstname', $('#firstname').val());
