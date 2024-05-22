@@ -241,49 +241,6 @@ namespace ProductEntryForm.Controllers
             }
         }
 
-        [HttpGet]
-        public ActionResult GetProductsByPartialId(string id)
-        {
-            var products = new List<object>();
-
-            using (var db = new SqlConnection(connStr))
-            {
-                db.Open();
-                using (var cmd = db.CreateCommand())
-                {
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = "SELECT * FROM PRODUCT WHERE ID LIKE @id";
-                    cmd.Parameters.AddWithValue("@id", "%" + id + "%");
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var product = new
-                            {
-                                id = reader["ID"].ToString(),
-                                name = reader["NAME"].ToString(),
-                                price = reader["PRICE"].ToString(),
-                                desc = reader["DESCRIPTION"].ToString(),
-                                isbn = reader["ISBN"].ToString(),
-                                pub = reader["PUBLISHER"].ToString(),
-                                page = reader["PAGE"].ToString(),
-                                weight = reader["WEIGHT"].ToString(),
-                                dimension = reader["DIMENSION"].ToString(),
-                                stock = reader["STOCK"].ToString(),
-                                image = reader["IMAGE"].ToString(),
-                            };
-
-                            products.Add(product);
-                        }
-                    }
-                }
-            }
-
-            return Json(products, JsonRequestBehavior.AllowGet);
-        }
-
-
         [HttpPost]
         public ActionResult StudentUpdate()
         {
