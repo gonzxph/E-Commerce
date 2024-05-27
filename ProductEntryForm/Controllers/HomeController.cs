@@ -6,6 +6,8 @@ using System.Web.Mvc;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
+using System.Web.Helpers;
+using System.Runtime.ConstrainedExecution;
 
 namespace ProductEntryForm.Controllers
 {
@@ -13,7 +15,7 @@ namespace ProductEntryForm.Controllers
     {
 
 
-        string connStr = @"Data Source=localhost\mssqlserver04;Initial Catalog=student;Integrated Security=True";
+        string connStr = @"Data Source=gonzxph\MSSQLSERVER04;Initial Catalog=student;Integrated Security=True";
         
         public ActionResult Index()
         {
@@ -43,6 +45,8 @@ namespace ProductEntryForm.Controllers
         {
             return View();
         }
+
+
 
 
         public ActionResult Admin_Dashboard()
@@ -284,5 +288,199 @@ namespace ProductEntryForm.Controllers
             }
             return Json(data, JsonRequestBehavior.AllowGet);
         }
+
+
+        ////Customer
+        public ActionResult CustomerDashboard()
+        {
+            int userId = 0;
+            if (Session["UserId"] != null)
+            {
+                // Convert session value to int
+                userId = Convert.ToInt32(Session["UserId"]);
+                // Proceed with dashboard logic
+                return View();
+            }
+            else
+            {
+                // Redirect to login if user is not logged in
+                return RedirectToAction("UserLogin");
+            }
+        }
+
+
+        public ActionResult UserLogin()
+        {
+            return View();
+        }
+
+
+        [HttpPost]
+        public ActionResult UserRegister()
+        {
+            var data = new List<object>();
+            string fname = Request.Form["user_fname"];
+            string lname = Request.Form["user_lname"];
+            string phoneno = Request.Form["user_phoneno"];
+            string email = Request.Form["user_email"];
+            string pwd = Request.Form["user_pwd"];
+
+            using (var db = new SqlConnection(connStr))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "INSERT INTO [USER] (USER_FNAME, USER_LNAME, USER_PHONE_NO, USER_EMAIL, USER_PASSWORD) " +
+                                      "VALUES (@USER_FNAME, @USER_LNAME, @USER_PHONE_NO, @USER_EMAIL, @USER_PASSWORD)";
+
+                    cmd.Parameters.AddWithValue("@USER_FNAME", fname);
+                    cmd.Parameters.AddWithValue("@USER_LNAME", lname);
+                    cmd.Parameters.AddWithValue("@USER_PHONE_NO", phoneno);
+                    cmd.Parameters.AddWithValue("@USER_EMAIL", email);
+                    cmd.Parameters.AddWithValue("@USER_PASSWORD", pwd);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            data.Add(new { mess = "User registered successfully!" });
+            return Json(data, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public ActionResult checkLogin()
+        {
+            var data = new List<object>();
+            var response = new { success = false, message = "Invalid email or password" };
+            string email = Request["email"];
+            string pwd = Request["pwd"];
+
+            using (var db = new SqlConnection(connStr))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "SELECT * FROM [user] WHERE user_email = @user_email";
+                    cmd.Parameters.AddWithValue("@user_email", email);
+
+                    using (var reader = cmd.ExecuteReader()) {
+
+                        if (reader.Read()) {
+                            string userId = reader["user_id"].ToString();
+                            string check_pass = reader["user_password"].ToString();
+                            if(check_pass == pwd)
+                            {
+                                Session["UserId"] = userId;
+                                response = new { success = true, message = "Login Successfull" };
+                            }
+                        }
+                    }
+                }
+            }
+
+            return Json(response, JsonRequestBehavior.AllowGet);    
+        }
+
+        [HttpPost]
+        public ActionResult AddToCart(int productId, int quantity)
+        {
+            var response = new { success = false, message = "Error adding to cart" };
+            var userId = Session["UserId"];
+
+            if (userId == null)
+            {
+                response = new { success = false, message = "User not logged in" };
+                return Json(response, JsonRequestBehavior.AllowGet);
+            }
+
+           
+            using (var db = new SqlConnection(connStr))
+            {
+                db.Open();
+                using (var transaction = db.BeginTransaction())
+                {
+                    try
+                    {
+                        using (var cmd = db.CreateCommand())
+                        {
+                            cmd.Transaction = transaction;
+                            cmd.CommandType = CommandType.Text;
+
+                            // Check if the product already exists in the cart
+                            cmd.CommandText = "SELECT cart_count FROM Cart WHERE user_id = @user_id AND prod_id = @prod_id";
+                            cmd.Parameters.AddWithValue("@user_id", userId);
+                            cmd.Parameters.AddWithValue("@prod_id", productId);
+
+                            var existingCartCount = cmd.ExecuteScalar();
+                            cmd.Parameters.Clear(); // Clear parameters after executing the query
+
+                            int newCartCount;
+                            decimal prodPrice;
+
+                            // Fetch the product price
+                            cmd.CommandText = "SELECT prod_price FROM Product WHERE prod_id = @prod_id";
+                            cmd.Parameters.AddWithValue("@prod_id", productId);
+                            prodPrice = (decimal)cmd.ExecuteScalar();
+                            cmd.Parameters.Clear(); // Clear parameters after executing the query
+
+                            if (existingCartCount != null)
+                            {
+                                // If the product exists, update the quantity and total price
+                                newCartCount = Convert.ToInt32(existingCartCount) + quantity;
+                                cmd.CommandText = "UPDATE Cart SET cart_count = @newCartCount, cart_totalprice = @cart_totalPrice WHERE user_id = @user_id AND prod_id = @prod_id";
+                                cmd.Parameters.AddWithValue("@newCartCount", newCartCount);
+                                cmd.Parameters.AddWithValue("@cart_totalPrice", newCartCount * prodPrice);
+                                cmd.Parameters.AddWithValue("@user_id", userId);
+                                cmd.Parameters.AddWithValue("@prod_id", productId);
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear(); // Clear parameters after executing the query
+
+                                response = new { success = true, message = "Product quantity updated successfully" };
+                            }
+                            else
+                            {
+                                // If the product does not exist, insert a new record
+                                newCartCount = quantity;
+                                cmd.CommandText = "INSERT INTO Cart (user_id, prod_id, cart_count, cart_totalprice) VALUES (@user_id, @prod_id, @cart_count, @cart_totalprice)";
+                                cmd.Parameters.AddWithValue("@user_id", userId);
+                                cmd.Parameters.AddWithValue("@prod_id", productId);
+                                cmd.Parameters.AddWithValue("@cart_count", newCartCount);
+                                cmd.Parameters.AddWithValue("@cart_totalprice", newCartCount * prodPrice);
+                                cmd.ExecuteNonQuery();
+                                cmd.Parameters.Clear(); // Clear parameters after executing the query
+
+                                response = new { success = true, message = "Product added to cart successfully" };
+                            }
+
+                            // Update the product's stock
+                            cmd.CommandText = "UPDATE Product SET prod_stock = prod_stock - @quantity WHERE prod_id = @prod_id";
+                            cmd.Parameters.AddWithValue("@quantity", quantity);
+                            cmd.Parameters.AddWithValue("@prod_id", productId);
+                            cmd.ExecuteNonQuery();
+                            cmd.Parameters.Clear(); // Clear parameters after executing the query
+                        }
+
+                        transaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        response = new { success = false, message = "Error adding to cart: " + ex.Message };
+                        return Json(response, JsonRequestBehavior.AllowGet);
+                    }
+                }
+            }
+
+            return Json(response, JsonRequestBehavior.AllowGet);
+        }
+
+
+
+
+
+
+
     }
 }

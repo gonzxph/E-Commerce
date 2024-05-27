@@ -206,11 +206,7 @@
                 cmd.CommandText = "SELECT * FROM PRODUCT";
                 using (var reader = cmd.ExecuteReader())
                 {
-                    if (reader.HasRows)
-                    {
-
-
-                        <table border="1" id="datatable" class="table table-bordered">
+                   <table border="1" id="datatable" class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th width="5%">ID</th>
@@ -232,19 +228,19 @@
                                 @while (reader.Read())
                                 {
                                 <tr class="items">
-                                    <td class="prod-id">@reader["ID"]</td>
-                                    <td>@reader["NAME"]</td>
-                                    <td>@reader["DESCRIPTION"]</td>
+                                    <td class="prod-id">@reader["PROD_ID"]</td>
+                                    <td>@reader["PROD_NAME"]</td>
+                                    <td>@reader["PROD_DESCRIPTION"]</td>
                                     <td style="text-align: center">
-                                        <img src="../Home/Image?filename=@HttpUtility.UrlEncode(reader["IMAGE"] + "")" width="50%" />
+                                        <img src="../Home/Image?filename=@HttpUtility.UrlEncode(reader["PROD_IMAGE"] + "")" width="50%" />
                                     </td>
-                                    <td>@reader["ISBN"]</td>
-                                    <td>@reader["PAGE"]</td>
-                                    <td>@reader["PUBLISHER"]</td>
-                                    <td>@reader["WEIGHT"]</td>
-                                    <td>@reader["DIMENSION"]</td>
-                                    <td>@reader["STOCK"]</td>
-                                    <td>@reader["PRICE"]</td>
+                                    <td>@reader["PROD_ISBN"]</td>
+                                    <td>@reader["PROD_PAGE"]</td>
+                                    <td>@reader["PROD_PUBLISHER"]</td>
+                                    <td>@reader["PROD_WEIGHT"]</td>
+                                    <td>@reader["PROD_DIMENSION"]</td>
+                                    <td>@reader["PROD_STOCK"]</td>
+                                    <td>@reader["PROD_PRICE"]</td>
                                     <td><button type="button" class="btn btn-primary btn-up" data-bs-toggle="modal" data-bs-target="#updateModal">Update</button></td>
                                     <td><button class="btn btn-danger btn-del" id="btnDel" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button></td>
 
@@ -252,7 +248,6 @@
                                 }
                             </tbody>
                         </table>
-                    }
                 }
             }
         }

@@ -23,6 +23,7 @@
             contentType: false,
             success: function (data) {
                 alert('Product Successfully Created')
+                location.reload()
             },
             error: function () {
                 alert('Error!')

@@ -1,0 +1,199 @@
+﻿@using System.Web;
+@using System.Web.Mvc;
+@using System.Data;
+@using System.Data.SqlClient;
+@using System.IO;
+@using System.Drawing;
+@using System.Drawing.Imaging;
+@using System.Web.Services;
+<html>
+<head>
+    <title>Customer Dashboard</title>
+    <style>
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+            .card:hover {
+                transform: scale(1.05);
+            }
+
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card-body {
+            font-size: 0.8rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+        }
+
+        .card-text {
+            font-size: 0.8rem;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+        }
+
+        .quantity-button {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity {
+            width: 60px;
+            text-align: center;
+        }
+        .offcanvas-wider {
+            width: 700px !important;
+        }
+    </style>
+
+</head>
+<body>
+    <button class="btn btn-light btn-image float-end" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+        <img src="~/Add Shopping Cart.svg" alt="Toggle right offcanvas" style="width:40px">
+    </button>
+    <body>
+        <!-- Offcanvas -->
+        <div class="offcanvas offcanvas-end offcanvas-wider" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+            <div class="offcanvas-header">
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"> </button>
+            </div>
+            <div class="offcanvas-body">
+                @{
+                    // Retrieve the user ID from the session
+                    var userId = Session["UserId"];
+                    if (userId != null)
+                    {
+                        string conn1 = @"Data Source=localhost\mssqlserver04;Initial Catalog=student;Integrated Security=True";
+                        using (var db = new SqlConnection(conn1))
+                        {
+                            db.Open();
+                            using (var cmd = db.CreateCommand())
+                            {
+                                cmd.CommandType = CommandType.Text;
+                                cmd.CommandText = @"
+                                SELECT
+                                    p.prod_id,
+                                    p.prod_name,
+                                    p.prod_image,
+                                    c.cart_count,
+                                    p.prod_price,
+                                    c.cart_totalprice
+                                FROM
+                                    CART c
+                                JOIN
+                                    PRODUCT p
+                                ON
+                                    c.prod_id = p.prod_id
+                                WHERE
+                                    c.user_id = @user_id";
+                                cmd.Parameters.AddWithValue("@user_id", userId);
+                                using (var reader = cmd.ExecuteReader())
+                                {
+                                    <table border="1" id="datatable" class="table table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th width="5%">Image</th>
+                                                <th width="10%">Product Name</th>
+                                                <th width="10%">Total Price</th>
+                                                <th width="10%">Quantity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @while (reader.Read())
+                                            {
+                                                var prodId = reader["prod_id"].ToString();
+                                                var prodName = reader["prod_name"].ToString();
+                                                var prodImage = reader["prod_image"].ToString(); // Make sure the column name matches
+                                                var cartCount = reader["cart_count"].ToString();
+                                                var totalPrice = reader["cart_totalprice"].ToString();
+                                                <tr class="items">
+                                                    <td style="text-align: center">
+                                                        <img src="../Home/Image?filename=@HttpUtility.UrlEncode(prodImage)" width="50%" />
+                                                    </td>
+                                                    <td class="prod-id">@prodName</td>
+                                                    <td>@totalPrice</td>
+                                                    <td>@cartCount</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p>User not logged in.</p>
+                    }
+                }
+            </div>
+        </div>
+
+
+
+    </body>
+    <h2>Customer Dashboard</h2>
+    @{
+
+        string conn = @"Data Source=localhost\mssqlserver04;Initial Catalog=student;Integrated Security=True";
+        using (var db = new SqlConnection(conn))
+        {
+            db.Open();
+            using (var cmd = db.CreateCommand())
+            {
+                cmd.CommandType = CommandType.Text;
+                cmd.CommandText = "SELECT * FROM PRODUCT";
+                using (var reader = cmd.ExecuteReader())
+                {
+                    <div class="container">
+                        <div class="row">
+                            @while (reader.Read())
+                            {
+                                var description = reader["PROD_DESCRIPTION"].ToString();
+                                var shortDescription = description.Length > 25 ? description.Substring(0, 25) + "..." : description;
+                                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+                                    <div class="card m-2" style="width: 100%;">
+                                        <img src="../Home/Image?filename=@HttpUtility.UrlEncode(reader["PROD_IMAGE"] + "")" class="card-img-top" alt="...">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><a href="">@reader["PROD_NAME"]</a></h5>
+                                            <p class="card-text">@shortDescription</p>
+                                            <p class="text-end">Stock: @reader["PROD_STOCK"]</p>
+                                            <div class="card-footer">
+                                                <div class="d-flex align-items-center">
+                                                    <button class="quantity-button btn btn-outline-secondary" onclick="this.parentNode.querySelector('input[type=number]').stepDown()">-</button>
+                                                    <input class="quantity form-control mx-2" style="width: 60px; text-align: center;" min="0" name="quantity" value="0" type="number">
+                                                    <button class="quantity-button btn btn-outline-secondary" onclick="this.parentNode.querySelector('input[type=number]').stepUp()">+</button>
+                                                </div>
+                                                <button class="btn btn-primary ms-3 btnaddcart" data-product-id="@reader["PROD_ID"]">Add to Cart</button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>  
+                    </div>
+
+                }
+            }
+        }
+
+    }
+</body>
+<script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
+<script src="~/Scripts/myScript/addtocart.js"></script>
+</html>

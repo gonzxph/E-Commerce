@@ -1,60 +1,58 @@
-﻿
-@{
+﻿@{
     ViewBag.Title = "Customer";
 }
 
 <html>
-    <head>
-        <title>Customer Entry Form</title>
-        <style>
-            .form-container{
-                width:500px;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Customer Entry Form</h1>
+<head>
+    <title>Customer Registration Form</title>
+    <style>
+        .form-container {
+            width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customer Registration Form</h1>
+    <form id="registrationForm" oninput="pwd2.setCustomValidity(pwd2.value != pwd.value ? 'Password do not match.' : '')">
         <div class="container">
             <div class="form-container">
                 <div class="row">
                     <div class="col">
                         <div class="form-group">
                             <label for="fname">Firstname</label>
-                            <input class="form-control" type="text" id="fname" />
+                            <input class="form-control" type="text" id="fname" name="user_fname" />
                         </div>
                         <div class="form-group">
-                            <label for="fname">Lastname</label>
-                            <input class="form-control" type="text" id="lname" />
+                            <label for="lname">Lastname</label>
+                            <input class="form-control" type="text" id="lname" name="user_lname" />
                         </div>
                         <div class="form-group">
                             <label for="phoneno">Phone Number</label>
-                            <input class="form-control" type="tel" id="phoneno" />
+                            <input class="form-control" type="tel" id="phoneno" name="user_phoneno" />
                         </div>
-
                     </div>
                     <div class="col">
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input class="form-control" type="email" id="email" />
+                            <input class="form-control" type="email" id="email" name="user_email" required />
                         </div>
                         <div class="form-group">
                             <label for="pwd">Password</label>
-                            <input class="form-control" type="password" id="pwd" />
+                            <input class="form-control" type="password" id="pwd" name="user_pwd" />
                         </div>
                         <div class="form-group">
                             <label for="pwd2">Confirm Password</label>
-                            <input class="form-control" type="password" id="pwd2" />
+                            <input class="form-control" type="password" id="pwd2" name="pwd2" />
                         </div>
                     </div>
                 </div>
                 <br />
-                <button type="submit" id="btn" class="btn btn-primary mb-2">Submit</button>
+                <button type="submit" id="btnRegister" class="btn btn-primary mb-2">Register</button>
             </div>
         </div>
+    </form>
 
-
-     <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
-     <script src="~/Scripts/myScript/customer.js"></script>
-    </body>
+    <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
+    <script src="~/Scripts/myScript/login/register.js"></script>
+</body>
 </html>
-
