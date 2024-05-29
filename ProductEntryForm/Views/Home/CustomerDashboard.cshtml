@@ -67,6 +67,7 @@
     </button>
     <body>
         <!-- Offcanvas -->
+        <!-- Offcanvas -->
         <div class="offcanvas offcanvas-end offcanvas-wider" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
             <div class="offcanvas-header">
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"> </button>
@@ -120,13 +121,23 @@
                                                 var prodImage = reader["prod_image"].ToString(); // Make sure the column name matches
                                                 var cartCount = reader["cart_count"].ToString();
                                                 var totalPrice = reader["cart_totalprice"].ToString();
+                                                var prodPrice = reader["prod_price"].ToString();
                                                 <tr class="items">
                                                     <td style="text-align: center">
                                                         <img src="../Home/Image?filename=@HttpUtility.UrlEncode(prodImage)" width="50%" />
                                                     </td>
                                                     <td class="prod-id">@prodName</td>
-                                                    <td>@totalPrice</td>
-                                                    <td>@cartCount</td>
+                                                    <td class="total-price">@totalPrice</td>
+                                                    <td>
+                                                        <div class="card-footer">
+                                                            <div class="d-flex align-items-center">
+                                                                <button class="quantity-button btn btn-outline-secondary" onclick="updateQuantity(this, -1, @prodPrice, @prodId)">-</button>
+                                                                <input class="quantity form-control mx-2" style="width: 60px; text-align: center;" min="0" name="quantity" value="@cartCount" type="number">
+                                                                <button class="quantity-button btn btn-outline-secondary" onclick="updateQuantity(this, 1, @prodPrice, @prodId)">+</button>
+                                                            </div>
+                                                            <button class="btn btn-primary ms-3 btndeleteitem" data-product-id="@prodId">Delete</button>
+                                                        </div>
+                                                    </td>
                                                 </tr>
                                             }
                                         </tbody>
@@ -142,7 +153,6 @@
                 }
             </div>
         </div>
-
 
 
     </body>

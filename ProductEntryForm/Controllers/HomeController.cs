@@ -200,39 +200,37 @@ namespace ProductEntryForm.Controllers
         }
 
         [HttpGet]
-        public ActionResult UpdateProduct(int prod_id)
+        public ActionResult GetProduct(int id)
         {
-            var prod_data = new List<object>();
-
             using (var db = new SqlConnection(connStr))
             {
                 db.Open();
                 using (var cmd = db.CreateCommand())
                 {
                     cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = "SELECT * FROM PRODUCT WHERE ID = @id";
-                    cmd.Parameters.AddWithValue("@id", prod_id);
+                    cmd.CommandText = "SELECT * FROM PRODUCT WHERE PROD_ID = @id";
+                    cmd.Parameters.AddWithValue("@id", id);
 
                     using (var reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
                         {
 
-
-                            prod_data.Add(new
+                            var imageUrl = Url.Action("Image", "Home", new { filename = reader["PROD_IMAGE"].ToString() });
+                            var prod_data = new
                             {
-                                id = reader["ID"].ToString(),
-                                name = reader["NAME"].ToString(),
-                                price = reader["PRICE"].ToString(),
-                                desc = reader["DESCRIPTION"].ToString(),
-                                isbn = reader["ISBN"].ToString(),
-                                pub = reader["PUBLISHER"].ToString(),
-                                page = reader["PAGE"].ToString(),
-                                weight = reader["WEIGHT"].ToString(),
-                                dimension = reader["DIMENSION"].ToString(),
-                                stock = reader["STOCK"].ToString(),
-                                image = reader["IMAGE"].ToString(),
-                            });
+                                id = reader["PROD_ID"].ToString(),
+                                name = reader["PROD_NAME"].ToString(),
+                                price = reader["PROD_PRICE"].ToString(),
+                                desc = reader["PROD_DESCRIPTION"].ToString(),
+                                isbn = reader["PROD_ISBN"].ToString(),
+                                pub = reader["PROD_PUBLISHER"].ToString(),
+                                page = reader["PROD_PAGE"].ToString(),
+                                weight = reader["PROD_WEIGHT"].ToString(),
+                                dimension = reader["PROD_DIMENSION"].ToString(),
+                                stock = reader["PROD_STOCK"].ToString(),
+                                image = imageUrl
+                            };
 
                             return Json(prod_data, JsonRequestBehavior.AllowGet);
                         }
@@ -241,6 +239,57 @@ namespace ProductEntryForm.Controllers
                             return Json(null, JsonRequestBehavior.AllowGet);
                         }
                     }
+                }
+            }
+        }
+
+        [HttpPost]
+        public ActionResult PostProductUpdate()
+        {
+            var prod_id = Request.Form["prod_id"];
+            var prod_name = Request.Form["prod_name"];
+            var prod_desc = Request.Form["prod_desc"];
+            var prod_price = Request.Form["prod_price"];
+            var prod_isbn = Request.Form["prod_isbn"];
+            var prod_weight = Request.Form["prod_weight"];
+            var prod_pub = Request.Form["prod_pub"];
+            var prod_dimen = Request.Form["prod_dimen"];
+            var prod_stock = Request.Form["prod_stock"];
+            var prod_page = Request.Form["prod_page"];
+            var insert_image = Request.Files["insert_image"];
+
+            using (var db = new SqlConnection(connStr))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = @"UPDATE PRODUCT SET PROD_NAME = @prod_name, PROD_DESCRIPTION = @prod_desc, PROD_PRICE = @prod_price, PROD_ISBN = @prod_isbn, PROD_WEIGHT = @prod_weight, PROD_PUBLISHER = @prod_pub, PROD_DIMENSION = @prod_dimen, PROD_STOCK = @prod_stock, PROD_PAGE = @prod_page WHERE PROD_ID = @prod_id";
+                    cmd.Parameters.AddWithValue("@prod_id", prod_id);
+                    cmd.Parameters.AddWithValue("@prod_name", prod_name);
+                    cmd.Parameters.AddWithValue("@prod_desc", prod_desc);
+                    cmd.Parameters.AddWithValue("@prod_price", prod_price);
+                    cmd.Parameters.AddWithValue("@prod_isbn", prod_isbn);
+                    cmd.Parameters.AddWithValue("@prod_weight", prod_weight);
+                    cmd.Parameters.AddWithValue("@prod_pub", prod_pub);
+                    cmd.Parameters.AddWithValue("@prod_dimen", prod_dimen);
+                    cmd.Parameters.AddWithValue("@prod_page", prod_page);
+                    cmd.Parameters.AddWithValue("@prod_stock", prod_stock);
+
+                    if (insert_image != null && insert_image.ContentLength > 0)
+                    {
+                        // Save file and update database
+                        var fileName = Path.GetFileName(insert_image.FileName);
+                        var filePath = Path.Combine(@"C:\Uploads", fileName); // Use the physical path
+                        insert_image.SaveAs(filePath);
+                        cmd.CommandText += ", PROD_IMAGE = @prod_image";
+                        cmd.Parameters.AddWithValue("@prod_image", filePath); // Store the physical path in the database
+                    }
+
+                    var ctr = cmd.ExecuteNonQuery();
+                    var result = new { success = ctr > 0 };
+
+                    return Json(result, JsonRequestBehavior.AllowGet);
                 }
             }
         }
@@ -288,6 +337,8 @@ namespace ProductEntryForm.Controllers
             }
             return Json(data, JsonRequestBehavior.AllowGet);
         }
+
+        
 
 
         ////Customer
@@ -476,6 +527,65 @@ namespace ProductEntryForm.Controllers
             return Json(response, JsonRequestBehavior.AllowGet);
         }
 
+
+        [HttpPost]
+        public ActionResult UpdateQuantity(int productId, int newQuantity)
+        {
+            var userId = Session["UserId"];
+            if (userId == null)
+            {
+                return Json(new { success = false, message = "User not logged in" });
+            }
+
+            using (var db = new SqlConnection(connStr))
+            {
+                db.Open();
+                using (var transaction = db.BeginTransaction())
+                {
+                    try
+                    {
+                        // Update the cart quantity
+                        using (var cmd = db.CreateCommand())
+                        {
+                            cmd.Transaction = transaction;
+                            cmd.CommandType = CommandType.Text;
+                            cmd.CommandText = @"
+                    UPDATE CART
+                    SET cart_count = @newQuantity,
+                        cart_totalprice = @newQuantity * (SELECT prod_price FROM PRODUCT WHERE prod_id = @productId)
+                    WHERE user_id = @userId AND prod_id = @productId";
+                            cmd.Parameters.AddWithValue("@newQuantity", newQuantity);
+                            cmd.Parameters.AddWithValue("@productId", productId);
+                            cmd.Parameters.AddWithValue("@userId", userId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // Update the product stock
+                        using (var cmd = db.CreateCommand())
+                        {
+                            cmd.Transaction = transaction;
+                            cmd.CommandType = CommandType.Text;
+                            cmd.CommandText = @"
+                    UPDATE PRODUCT
+                    SET prod_stock = prod_stock - (@newQuantity - (SELECT cart_count FROM CART WHERE user_id = @userId AND prod_id = @productId))
+                    WHERE prod_id = @productId";
+                            cmd.Parameters.AddWithValue("@newQuantity", newQuantity);
+                            cmd.Parameters.AddWithValue("@productId", productId);
+                            cmd.Parameters.AddWithValue("@userId", userId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        transaction.Commit();
+                        return Json(new { success = true });
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        return Json(new { success = false, message = ex.Message });
+                    }
+                }
+            }
+        }
 
 
 

@@ -1,15 +1,26 @@
 ﻿$().ready(function () {
-    $('.btnUp').click(function () {
+    $('.btn-up').click(function () {
         var row = $(this).closest('tr')
         var id = row.find('.prod-id').text()
 
         $.ajax({
-            url: '../Home/UpdateProduct',
+            url: '../Home/GetProduct',
             type: 'GET',
             data: { id: id },
-            success: function (prod_data) {
-                console.log(prod_data)
-                $('#upname').val(prod_data[0].name);
+            success: function (data) {
+                if (data) {
+                    $('#upid').val(id);
+                    $('#upname').val(data.name);
+                    $('#updescript').val(data.desc);
+                    $('#upisbn').val(data.isbn);
+                    $('#upweight').val(data.weight);
+                    $('#upprice').val(data.price);
+                    $('#uppub').val(data.pub);
+                    $('#updimen').val(data.dimension);
+                    $('#upstock').val(data.stock);
+                    $('#uppage').val(data.page);
+                    $('#upshowimg').attr('src',data.image);
+                }
 
             },
             error: function (error) {
@@ -20,27 +31,37 @@
     })
 
 
-    $('#btnUpChange').click(function () {
+    $("#btnUpChange").click(function () {
         var data = new FormData();
-        data.append('insert_file', $('#insert_file')[0].files[0]);
-        data.append('firstname', $('#firstname').val());
+        var fileInput = $('#upimg')[0].files[0];
+        if (fileInput) {
+            data.append('insert_image', fileInput);
+        }
+        data.append('prod_id', $('#upid').val());
+        data.append('prod_name', $('#upname').val());
+        data.append('prod_desc', $('#updescript').val());
+        data.append('prod_price', $('#upprice').val());
+        data.append('prod_isbn', $('#upisbn').val());
+        data.append('prod_weight', $('#upweight').val());
+        data.append('prod_pub', $('#uppub').val());
+        data.append('prod_dimen', $('#updimen').val());
+        data.append('prod_stock', $('#upstock').val());
+        data.append('prod_page', $('#uppage').val());
 
         $.ajax({
-            url: '../Home/StudentUpdate',
+            url: '/Home/PostProductUpdate',
             type: 'POST',
             data: data,
             processData: false,
             contentType: false,
             success: function (data) {
-                console.log(data);
-                alert('Changes saved successfully.');
+                alert('Product updated successfully.');
+                $('#updateModal').modal('hide');
+                location.reload()
             },
             error: function () {
                 alert('Error saving changes.');
             }
         });
     });
-    $('#btnClose').click(function () {
-        $('#updateModal').hide();
-    });
-})
+});

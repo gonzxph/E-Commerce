@@ -120,47 +120,49 @@
                         <div class="form-container">
                             <div class="row">
                                 <div class="col">
+                                    <input type="hidden" id="upid" />
                                     <div class="form-group">
                                         <label for="name">Title</label>
                                         <input type="text" class="form-control" id="upname" name="name" placeholder="" />
                                     </div>
                                     <div class="form-group">
                                         <label for="descript">Book Description</label>
-                                        <textarea class=" form-control" id="descript" name="descript"></textarea>
+                                        <textarea class=" form-control" id="updescript" name="descript"></textarea>
                                     </div>
                                     <div class="form-group">
                                         <label for="isbn">ISBN</label>
-                                        <input type="number" class="form-control" id="isbn" name="isbn">
+                                        <input type="number" class="form-control" id="upisbn" name="isbn">
                                     </div>
                                     <div class="form-group">
                                         <label for="weight">Weight</label>
-                                        <input type="text" class="form-control" id="weight" name="weight">
+                                        <input type="text" class="form-control" id="upweight" name="weight">
                                     </div>
                                     <div class="form-group">
                                         <label for="img">Upload image</label>
-                                        <input type="file" class="form-control" id="img" name="img" />
+                                        <input type="file" class="form-control" id="upimg" name="img" /></br>
+                                        <img id="upshowimg" src="" alt="Product Image" width="70%" />
                                     </div>
                                 </div>
                                 <div class="col">
                                     <div class="form-group">
                                         <label for="price">Price</label>
-                                        <input class="form-control" type="number" id="price" name="price" />
+                                        <input class="form-control" type="number" id="upprice" name="price" />
                                     </div>
                                     <div class="form-group">
                                         <label for="pub">Publisher</label>
-                                        <input type="text" class="form-control" id="pub" name="pub">
+                                        <input type="text" class="form-control" id="uppub" name="pub">
                                     </div>
                                     <div class="form-group">
                                         <label for="page">Pages</label>
-                                        <input type="number" class="form-control" id="page" name="page">
+                                        <input type="number" class="form-control" id="uppage" name="page">
                                     </div>
                                     <div class="form-group">
                                         <label for="demin">Dimensions (WxHxD)</label>
-                                        <input type="text" class="form-control" id="dimen" name="dimen">
+                                        <input type="text" class="form-control" id="updimen" name="dimen">
                                     </div>
                                     <div class="form-group">
                                         <label for="stock">Quantity</label>
-                                        <input type="number" class="form-control" id="stock" name="stock">
+                                        <input type="number" class="form-control" id="upstock" name="stock">
                                     </div>
                                 </div>
                             </div>
@@ -206,27 +208,27 @@
                 cmd.CommandText = "SELECT * FROM PRODUCT";
                 using (var reader = cmd.ExecuteReader())
                 {
-                   <table border="1" id="datatable" class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th width="5%">ID</th>
-                                    <th width="10%">Product Name</th>
-                                    <th width="10%">Description</th>
-                                    <th width="10%">Image</th>
-                                    <th width="10%">ISBN</th>
-                                    <th width="5%">Page</th>
-                                    <th width="10%">Publisher</th>
-                                    <th width="10%">Weight</th>
-                                    <th width="10%">Dimension</th>
-                                    <th width="5%">Stock</th>
-                                    <th width="5%">Price</th>
-                                    <th width="5%">Action</th>
+                    <table border="1" id="datatable" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th width="5%">ID</th>
+                                <th width="10%">Product Name</th>
+                                <th width="10%">Description</th>
+                                <th width="10%">Image</th>
+                                <th width="10%">ISBN</th>
+                                <th width="5%">Page</th>
+                                <th width="10%">Publisher</th>
+                                <th width="10%">Weight</th>
+                                <th width="10%">Dimension</th>
+                                <th width="5%">Stock</th>
+                                <th width="5%">Price</th>
+                                <th width="5%">Action</th>
 
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @while (reader.Read())
-                                {
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @while (reader.Read())
+                            {
                                 <tr class="items">
                                     <td class="prod-id">@reader["PROD_ID"]</td>
                                     <td>@reader["PROD_NAME"]</td>
@@ -245,9 +247,9 @@
                                     <td><button class="btn btn-danger btn-del" id="btnDel" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button></td>
 
                                 </tr>
-                                }
-                            </tbody>
-                        </table>
+                            }
+                        </tbody>
+                    </table>
                 }
             }
         }
@@ -257,5 +259,6 @@
     <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
     <script src="~/Scripts/myScript/deleteproduct.js"></script>
     <script src="~/Scripts/myScript/product.js"></script>
+    <script src="~/Scripts/myScript/updateproduct.js"></script>
 </body>
 </html>

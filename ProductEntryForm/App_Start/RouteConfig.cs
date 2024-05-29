@@ -18,6 +18,13 @@ namespace ProductEntryForm
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
             );
+
+            routes.MapRoute(
+                name: "UpdateQuantity",
+                url: "Cart/UpdateQuantity",
+                defaults: new { controller = "Cart", action = "UpdateQuantity" }
+            );
+
         }
     }
 }
