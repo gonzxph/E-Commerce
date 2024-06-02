@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
-    <h2>Admin_Dashboard</h2>
+    <h2>Admin Dashboard</h2>
 
 
     <div class="text-end">
@@ -26,7 +26,7 @@
     </div>
     <div class="float-end">
         <div class="input-group mb-3">
-            <input type="text" class="form-control" id="search" placeholder="Search..." aria-label="Search" aria-describedby="button-search">
+            <input type="text" class="form-control" id="searchQuery" placeholder="Search..." aria-label="Search" aria-describedby="button-search">
             <button class="btn btn-outline-secondary" type="button" id="btnsearch">
                 <i class="fa fa-search"></i>
             </button>
@@ -198,6 +198,7 @@
     </div>
 
     @{
+        string searchQuery = Request.QueryString["searchQuery"];
         string conn = @"Data Source=localhost\mssqlserver04;Initial Catalog=student;Integrated Security=True";
         using (var db = new SqlConnection(conn))
         {
@@ -205,7 +206,24 @@
             using (var cmd = db.CreateCommand())
             {
                 cmd.CommandType = CommandType.Text;
-                cmd.CommandText = "SELECT * FROM PRODUCT";
+
+                if (!string.IsNullOrEmpty(searchQuery) && int.TryParse(searchQuery, out int searchId))
+                {
+                    cmd.CommandText = "SELECT * FROM product WHERE prod_id = @searchId";
+                    cmd.Parameters.AddWithValue("@searchId", searchId);
+                }
+                else if (!string.IsNullOrEmpty(searchQuery))
+                {
+                    // If searchQuery is not an integer, search by name (partial match)
+                    cmd.CommandText = "SELECT * FROM product WHERE prod_name LIKE @searchName";
+                    cmd.Parameters.AddWithValue("@searchName", "%" + searchQuery + "%");
+                }
+                else
+                {
+                    cmd.CommandText = "SELECT * FROM PRODUCT";
+                }
+
+
                 using (var reader = cmd.ExecuteReader())
                 {
                     <table border="1" id="datatable" class="table table-bordered">
@@ -260,5 +278,6 @@
     <script src="~/Scripts/myScript/deleteproduct.js"></script>
     <script src="~/Scripts/myScript/product.js"></script>
     <script src="~/Scripts/myScript/updateproduct.js"></script>
+    <script src="~/Scripts/myScript/searchproduct.js"></script>
 </body>
 </html>

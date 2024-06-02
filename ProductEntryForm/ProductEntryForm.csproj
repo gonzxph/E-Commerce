@@ -167,6 +167,7 @@
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\myScript\addtocart.js" />
     <Content Include="Scripts\myScript\customer.js" />
+    <Content Include="Scripts\myScript\deletecart.js" />
     <Content Include="Scripts\myScript\deleteproduct.js" />
     <Content Include="Scripts\myScript\login\login.js" />
     <Content Include="Scripts\myScript\login\register.js" />

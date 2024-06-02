@@ -82,17 +82,17 @@ namespace ProductEntryForm.Controllers
                     using (var cmd = db.CreateCommand())
                     {
                     cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = "INSERT INTO product (NAME, PRICE, DESCRIPTION, ISBN, PUBLISHER, PAGE, WEIGHT, DIMENSION, STOCK, [IMAGE]) VALUES (@NAME, @PRICE, @DESCRIPTION, @ISBN, @PUBLISHER, @PAGE, @WEIGHT, @DIMENSION, @STOCK, @IMAGE)";
-                    cmd.Parameters.AddWithValue("@NAME", prodName);
-                    cmd.Parameters.AddWithValue("@PRICE", prodPrice);
-                    cmd.Parameters.AddWithValue("@DESCRIPTION", prodDescript);
-                    cmd.Parameters.AddWithValue("@ISBN", prodIsbn);
-                    cmd.Parameters.AddWithValue("@PUBLISHER", prodPub);
-                    cmd.Parameters.AddWithValue("@PAGE", prodPage);
-                    cmd.Parameters.AddWithValue("@WEIGHT", prodWeight);
-                    cmd.Parameters.AddWithValue("@DIMENSION", prodDimen);
-                    cmd.Parameters.AddWithValue("@STOCK", prodStock);
-                    cmd.Parameters.AddWithValue("@IMAGE", image);
+                    cmd.CommandText = "INSERT INTO product (PROD_NAME, PROD_PRICE, PROD_DESCRIPTION, PROD_ISBN, PROD_PUBLISHER, PROD_PAGE, PROD_WEIGHT, PROD_DIMENSION, PROD_STOCK, [PROD_IMAGE]) VALUES (@PROD_NAME, @PROD_PRICE, @PROD_DESCRIPTION, @PROD_ISBN, @PROD_PUBLISHER, @PROD_PAGE, @PROD_WEIGHT, @PROD_DIMENSION, @PROD_STOCK, @PROD_IMAGE)";
+                    cmd.Parameters.AddWithValue("@PROD_NAME", prodName);
+                    cmd.Parameters.AddWithValue("@PROD_PRICE", prodPrice);
+                    cmd.Parameters.AddWithValue("@PROD_DESCRIPTION", prodDescript);
+                    cmd.Parameters.AddWithValue("@PROD_ISBN", prodIsbn);
+                    cmd.Parameters.AddWithValue("@PROD_PUBLISHER", prodPub);
+                    cmd.Parameters.AddWithValue("@PROD_PAGE", prodPage);
+                    cmd.Parameters.AddWithValue("@PROD_WEIGHT", prodWeight);
+                    cmd.Parameters.AddWithValue("@PROD_DIMENSION", prodDimen);
+                    cmd.Parameters.AddWithValue("@PROD_STOCK", prodStock);
+                    cmd.Parameters.AddWithValue("@PROD_IMAGE", image);
 
                     var ctr = cmd.ExecuteNonQuery();
                     if(ctr >= 1)
@@ -121,8 +121,8 @@ namespace ProductEntryForm.Controllers
                 using(var cmd = db.CreateCommand())
                 {
                     cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = "DELETE FROM PRODUCT WHERE ID = @ID";
-                    cmd.Parameters.AddWithValue("@ID", id);
+                    cmd.CommandText = "DELETE FROM PRODUCT WHERE PROD_ID = @PROD_ID";
+                    cmd.Parameters.AddWithValue("@PROD_ID", id);
 
                     var ctr = cmd.ExecuteNonQuery();
 
@@ -264,7 +264,35 @@ namespace ProductEntryForm.Controllers
                 using (var cmd = db.CreateCommand())
                 {
                     cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = @"UPDATE PRODUCT SET PROD_NAME = @prod_name, PROD_DESCRIPTION = @prod_desc, PROD_PRICE = @prod_price, PROD_ISBN = @prod_isbn, PROD_WEIGHT = @prod_weight, PROD_PUBLISHER = @prod_pub, PROD_DIMENSION = @prod_dimen, PROD_STOCK = @prod_stock, PROD_PAGE = @prod_page WHERE PROD_ID = @prod_id";
+
+                    string updateQuery = @"UPDATE PRODUCT SET 
+                                    PROD_NAME = @prod_name, 
+                                    PROD_DESCRIPTION = @prod_desc, 
+                                    PROD_PRICE = @prod_price, 
+                                    PROD_ISBN = @prod_isbn, 
+                                    PROD_WEIGHT = @prod_weight, 
+                                    PROD_PUBLISHER = @prod_pub, 
+                                    PROD_DIMENSION = @prod_dimen, 
+                                    PROD_STOCK = @prod_stock, 
+                                    PROD_PAGE = @prod_page";
+
+                    if (insert_image != null && insert_image.ContentLength > 0)
+                    {
+                        // Save file and update database
+                        var fileName = Path.GetFileName(insert_image.FileName);
+                        var filePath = Path.Combine(@"C:\Uploads", fileName); // Use the physical path
+                        insert_image.SaveAs(filePath);
+
+                        // Append the PROD_IMAGE field to the SQL command
+                        updateQuery += ", PROD_IMAGE = @prod_image";
+                        cmd.Parameters.AddWithValue("@prod_image", filePath); // Store the physical path in the database
+                    }
+
+                    updateQuery += " WHERE PROD_ID = @prod_id";
+
+                    cmd.CommandText = updateQuery;
+
+                    // Add the parameters for the command
                     cmd.Parameters.AddWithValue("@prod_id", prod_id);
                     cmd.Parameters.AddWithValue("@prod_name", prod_name);
                     cmd.Parameters.AddWithValue("@prod_desc", prod_desc);
@@ -276,16 +304,6 @@ namespace ProductEntryForm.Controllers
                     cmd.Parameters.AddWithValue("@prod_page", prod_page);
                     cmd.Parameters.AddWithValue("@prod_stock", prod_stock);
 
-                    if (insert_image != null && insert_image.ContentLength > 0)
-                    {
-                        // Save file and update database
-                        var fileName = Path.GetFileName(insert_image.FileName);
-                        var filePath = Path.Combine(@"C:\Uploads", fileName); // Use the physical path
-                        insert_image.SaveAs(filePath);
-                        cmd.CommandText += ", PROD_IMAGE = @prod_image";
-                        cmd.Parameters.AddWithValue("@prod_image", filePath); // Store the physical path in the database
-                    }
-
                     var ctr = cmd.ExecuteNonQuery();
                     var result = new { success = ctr > 0 };
 
@@ -293,6 +311,7 @@ namespace ProductEntryForm.Controllers
                 }
             }
         }
+
 
         [HttpPost]
         public ActionResult StudentUpdate()
@@ -459,26 +478,24 @@ namespace ProductEntryForm.Controllers
                             cmd.Transaction = transaction;
                             cmd.CommandType = CommandType.Text;
 
-                            // Check if the product already exists in the cart
                             cmd.CommandText = "SELECT cart_count FROM Cart WHERE user_id = @user_id AND prod_id = @prod_id";
                             cmd.Parameters.AddWithValue("@user_id", userId);
                             cmd.Parameters.AddWithValue("@prod_id", productId);
 
                             var existingCartCount = cmd.ExecuteScalar();
-                            cmd.Parameters.Clear(); // Clear parameters after executing the query
+                            cmd.Parameters.Clear(); 
 
                             int newCartCount;
                             decimal prodPrice;
 
-                            // Fetch the product price
                             cmd.CommandText = "SELECT prod_price FROM Product WHERE prod_id = @prod_id";
                             cmd.Parameters.AddWithValue("@prod_id", productId);
                             prodPrice = (decimal)cmd.ExecuteScalar();
-                            cmd.Parameters.Clear(); // Clear parameters after executing the query
+                            cmd.Parameters.Clear();
 
                             if (existingCartCount != null)
                             {
-                                // If the product exists, update the quantity and total price
+
                                 newCartCount = Convert.ToInt32(existingCartCount) + quantity;
                                 cmd.CommandText = "UPDATE Cart SET cart_count = @newCartCount, cart_totalprice = @cart_totalPrice WHERE user_id = @user_id AND prod_id = @prod_id";
                                 cmd.Parameters.AddWithValue("@newCartCount", newCartCount);
@@ -486,13 +503,12 @@ namespace ProductEntryForm.Controllers
                                 cmd.Parameters.AddWithValue("@user_id", userId);
                                 cmd.Parameters.AddWithValue("@prod_id", productId);
                                 cmd.ExecuteNonQuery();
-                                cmd.Parameters.Clear(); // Clear parameters after executing the query
+                                cmd.Parameters.Clear(); 
 
                                 response = new { success = true, message = "Product quantity updated successfully" };
                             }
                             else
                             {
-                                // If the product does not exist, insert a new record
                                 newCartCount = quantity;
                                 cmd.CommandText = "INSERT INTO Cart (user_id, prod_id, cart_count, cart_totalprice) VALUES (@user_id, @prod_id, @cart_count, @cart_totalprice)";
                                 cmd.Parameters.AddWithValue("@user_id", userId);
@@ -500,17 +516,17 @@ namespace ProductEntryForm.Controllers
                                 cmd.Parameters.AddWithValue("@cart_count", newCartCount);
                                 cmd.Parameters.AddWithValue("@cart_totalprice", newCartCount * prodPrice);
                                 cmd.ExecuteNonQuery();
-                                cmd.Parameters.Clear(); // Clear parameters after executing the query
+                                cmd.Parameters.Clear(); 
 
                                 response = new { success = true, message = "Product added to cart successfully" };
                             }
 
-                            // Update the product's stock
+
                             cmd.CommandText = "UPDATE Product SET prod_stock = prod_stock - @quantity WHERE prod_id = @prod_id";
                             cmd.Parameters.AddWithValue("@quantity", quantity);
                             cmd.Parameters.AddWithValue("@prod_id", productId);
                             cmd.ExecuteNonQuery();
-                            cmd.Parameters.Clear(); // Clear parameters after executing the query
+                            cmd.Parameters.Clear(); 
                         }
 
                         transaction.Commit();
@@ -544,36 +560,45 @@ namespace ProductEntryForm.Controllers
                 {
                     try
                     {
-                        // Update the cart quantity
+                        int oldQuantity;
+                        using (var cmd = db.CreateCommand())
+                        {
+                            cmd.Transaction = transaction;
+                            cmd.CommandType = CommandType.Text;
+                            cmd.CommandText = "SELECT cart_count FROM CART WHERE user_id = @userId AND prod_id = @productId";
+                            cmd.Parameters.AddWithValue("@userId", userId);
+                            cmd.Parameters.AddWithValue("@productId", productId);
+                            oldQuantity = (int)cmd.ExecuteScalar();
+                        }
+
                         using (var cmd = db.CreateCommand())
                         {
                             cmd.Transaction = transaction;
                             cmd.CommandType = CommandType.Text;
                             cmd.CommandText = @"
-                    UPDATE CART
-                    SET cart_count = @newQuantity,
-                        cart_totalprice = @newQuantity * (SELECT prod_price FROM PRODUCT WHERE prod_id = @productId)
-                    WHERE user_id = @userId AND prod_id = @productId";
+                        UPDATE CART
+                        SET cart_count = @newQuantity,
+                            cart_totalprice = @newQuantity * (SELECT prod_price FROM PRODUCT WHERE prod_id = @productId)
+                        WHERE user_id = @userId AND prod_id = @productId";
                             cmd.Parameters.AddWithValue("@newQuantity", newQuantity);
                             cmd.Parameters.AddWithValue("@productId", productId);
                             cmd.Parameters.AddWithValue("@userId", userId);
                             cmd.ExecuteNonQuery();
                         }
 
-                        // Update the product stock
-                        using (var cmd = db.CreateCommand())
+                        /*using (var cmd = db.CreateCommand())
                         {
                             cmd.Transaction = transaction;
                             cmd.CommandType = CommandType.Text;
                             cmd.CommandText = @"
-                    UPDATE PRODUCT
-                    SET prod_stock = prod_stock - (@newQuantity - (SELECT cart_count FROM CART WHERE user_id = @userId AND prod_id = @productId))
-                    WHERE prod_id = @productId";
+                        UPDATE PRODUCT
+                        SET prod_stock = prod_stock + @oldQuantity - @newQuantity
+                        WHERE prod_id = @productId";
                             cmd.Parameters.AddWithValue("@newQuantity", newQuantity);
+                            cmd.Parameters.AddWithValue("@oldQuantity", oldQuantity);
                             cmd.Parameters.AddWithValue("@productId", productId);
-                            cmd.Parameters.AddWithValue("@userId", userId);
                             cmd.ExecuteNonQuery();
-                        }
+                        }*/
 
                         transaction.Commit();
                         return Json(new { success = true });
@@ -587,10 +612,63 @@ namespace ProductEntryForm.Controllers
             }
         }
 
+        [HttpPost]
+        public ActionResult DeleteCartItem(int productId)
+        {
+            try
+            {
+                using (var connection = new SqlConnection(connStr))
+                {
+                    connection.Open();
 
+                    // Step 1: Get the cart item details to determine quantity
+                    string cartQuery = "SELECT * FROM CART WHERE prod_id = @productId";
+                    using (var cartCommand = new SqlCommand(cartQuery, connection))
+                    {
+                        cartCommand.Parameters.AddWithValue("@productId", productId);
+                        using (var cartReader = cartCommand.ExecuteReader())
+                        {
+                            if (cartReader.Read())
+                            {
+                                int cartId = Convert.ToInt32(cartReader["cart_id"]);
+                                int cartQuantity = Convert.ToInt32(cartReader["cart_count"]);
 
+                                // Step 2: Delete the item from the cart
+                                string deleteCartQuery = "DELETE FROM CART WHERE cart_id = @cartId";
+                                using (var deleteCartCommand = new SqlCommand(deleteCartQuery, connection))
+                                {
+                                    deleteCartCommand.Parameters.AddWithValue("@cartId", cartId);
+                                    deleteCartCommand.ExecuteNonQuery();
+                                }
 
+                                // Step 3: Restore stock in the PRODUCT table
+                                string updateStockQuery = "UPDATE PRODUCT SET prod_stock = prod_stock + @cartQuantity WHERE prod_id = @productId";
+                                using (var updateStockCommand = new SqlCommand(updateStockQuery, connection))
+                                {
+                                    updateStockCommand.Parameters.AddWithValue("@cartQuantity", cartQuantity);
+                                    updateStockCommand.Parameters.AddWithValue("@productId", productId);
+                                    updateStockCommand.ExecuteNonQuery();
+                                }
 
+                                // If everything is successful, return success JSON
+                                return Json(new { success = true });
+                            }
+                            else
+                            {
+                                // Cart item not found, return error JSON
+                                return Json(new { success = false, error = "Cart item not found." });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions here, return error JSON
+                Console.WriteLine("Error: " + ex.Message);
+                return Json(new { success = false, error = "An error occurred while processing the request." });
+            }
+        }
 
     }
 }

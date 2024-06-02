@@ -1,21 +1,26 @@
 ﻿$().ready(function () {
-    // Handle click event for Add to Cart buttons
     $('.btnaddcart').click(function () {
-        var productId = $(this).data('product-id'); // Get the product ID from the button's data attribute
-        var quantity = $(this).closest('.card-footer').find('.quantity').val(); // Get the quantity from the input field
+        var productId = $(this).data('product-id'); 
+        var quantity = $(this).closest('.card-footer').find('.quantity').val(); 
 
-        // Send AJAX request to add to cart
-        $.ajax({
-            url: '../Home/AddToCart',
-            type: 'POST',
-            data: { productId: productId, quantity: quantity },
-            success: function (data) {
-                alert(data.message); // Display success or error message
-            },
-            error: function () {
-                alert('Error adding to cart');
-            }
-        });
+        if (quantity != 0) {
+            $.ajax({
+                url: '../Home/AddToCart',
+                type: 'POST',
+                data: { productId: productId, quantity: quantity },
+                success: function (data) {
+                    alert(data.message);
+                    location.reload()
+                },
+                error: function () {
+                    alert('Error adding to cart');
+                }
+            });
+        } else {
+            alert("You must add a product")
+        }
+
+        
     });
 
 
@@ -35,7 +40,7 @@ function updateQuantity(button, change, price, productId) {
 
         // Send AJAX request to update quantity in the database
         $.ajax({
-            url: '/Cart/UpdateQuantity',
+            url: '/Home/UpdateQuantity',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({

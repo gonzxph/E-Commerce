@@ -2,6 +2,7 @@
     $(".btn-del").click(function () {
         var row = $(this).closest('tr')
         var id = row.find('.prod-id').text()
+        
 
         $('.btnDelYes').click(function () {
           
