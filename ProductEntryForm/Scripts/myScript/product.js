@@ -1,7 +1,6 @@
 ﻿$().ready(function () {
 
     $('#btnAddProd').click(function () {
-
         var formData = new FormData();
         formData.append('prodName', $('#name').val())
         formData.append('prodDescript', $('#descript').val())
@@ -22,7 +21,13 @@
             processData: false,
             contentType: false,
             success: function (data) {
-                alert('Product Successfully Created')
+                if (data[0].mess == 1) {
+                    alert(data[0].message);
+                } else if(data[0].mess == 2){
+                    alert(data[0].message);
+                }else{
+                    alert(data[0].message)
+                }
                 location.reload()
             },
             error: function () {

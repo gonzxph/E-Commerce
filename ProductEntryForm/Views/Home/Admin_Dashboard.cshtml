@@ -33,10 +33,6 @@
         </div>
     </div>
 
-
-
-
-
     <!-- add product modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -52,19 +48,19 @@
                                 <div class="col">
                                     <div class="form-group">
                                         <label for="name">Title</label>
-                                        <input type="text" class="form-control" id="name" name="name" placeholder="" />
+                                        <input type="text" maxlength="30" class="form-control" id="name" name="name" placeholder="" />
                                     </div>
                                     <div class="form-group">
                                         <label for="descript">Book Description</label>
-                                        <textarea class=" form-control" id="descript" name="descript"></textarea>
+                                        <textarea maxlength="1000" class=" form-control" id="descript" name="descript"></textarea>
                                     </div>
                                     <div class="form-group">
                                         <label for="isbn">ISBN</label>
-                                        <input type="number" class="form-control" id="isbn" name="isbn">
+                                        <input maxlength="35" type="number" class="form-control" id="isbn" name="isbn">
                                     </div>
                                     <div class="form-group">
                                         <label for="weight">Weight</label>
-                                        <input type="text" class="form-control" id="weight" name="weight">
+                                        <input type="text" maxlength="10" class="form-control" id="weight" name="weight">
                                     </div>
                                     <div class="form-group">
                                         <label for="img">Upload image</label>
@@ -74,23 +70,23 @@
                                 <div class="col">
                                     <div class="form-group">
                                         <label for="price">Price</label>
-                                        <input class="form-control" type="number" id="price" name="price" />
+                                        <input class="form-control" maxlength="35" type="number" id="price" name="price" />
                                     </div>
                                     <div class="form-group">
                                         <label for="pub">Publisher</label>
-                                        <input type="text" class="form-control" id="pub" name="pub">
+                                        <input type="text" maxlength="35" class="form-control" id="pub" name="pub">
                                     </div>
                                     <div class="form-group">
                                         <label for="page">Pages</label>
-                                        <input type="number" class="form-control" id="page" name="page">
+                                        <input type="number" maxlength="10" class="form-control" id="page" name="page">
                                     </div>
                                     <div class="form-group">
                                         <label for="demin">Dimensions (WxHxD)</label>
-                                        <input type="text" class="form-control" id="dimen" name="dimen">
+                                        <input type="text" maxlength="10" class="form-control" id="dimen" name="dimen">
                                     </div>
                                     <div class="form-group">
                                         <label for="stock">Quantity</label>
-                                        <input type="number" class="form-control" id="stock" name="stock">
+                                        <input type="number" maxlength="10" class="form-control" id="stock" name="stock">
                                     </div>
                                 </div>
                             </div>
@@ -105,7 +101,6 @@
             </div>
         </div>
     </div>
-
 
     <!--update modal-->
     <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -272,7 +267,6 @@
             }
         }
     }
-
 
     <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
     <script src="~/Scripts/myScript/deleteproduct.js"></script>

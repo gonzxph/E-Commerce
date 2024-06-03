@@ -1,4 +1,9 @@
-﻿$().ready(function () {
+﻿$(document).ready(function () {
+    $('#btnBack').click(function (event) {
+        event.preventDefault();
+        window.location.href = '../Home/UserLogin';
+    });
+
     $('#registrationForm').submit(function (event) {
         event.preventDefault();
 
@@ -12,6 +17,7 @@
             contentType: false,
             success: function (data) {
                 alert(data[0].mess);
+                window.location.href = '../Home/UserLogin';
             },
             error: function () {
                 alert('Error!');

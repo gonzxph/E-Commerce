@@ -1,18 +1,57 @@
-﻿
-<html>
+﻿<html>
 <head>
     <title>Customer Login</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .h1 {
+            color: slategray
+        }
+    </style>
 </head>
 <body>
-    <form>
-        <label for="email">Email</label>
-        <input class="form-control" type="email" id="email" placeholder="e.g. user@email.com" />
-        <label for="pwd">Paswword</label>
-        <input class="form-control" type="password" id="pwd" />
-        <br />
-        <button class="btn btn-primary" id="btnlogin">Login</button>
-    </form>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <!-- First column content -->
+                <img src="~/2.svg" style="width: 500px; margin-top: -30%; margin-left: 5%" />
+            </div>
+            <div class="col-md-6">
+                <!-- Second column with the form -->
+                <form style="margin-top: -2%; margin-left: 15%">
+                    <div class="h1" style="font-size: 80px; font-weight: bold; font-family: 'Times New Roman', Times, serif; color: dodgerblue">
+                        bookbytes
+                    </div>
+                    <div class="h1" style="font-size: 15px;">
+                        <p style="width:60%">
+                            Discover a world of literary treasures at our online bookstore, where every page turns into a new adventure.
+                        </p>
+                    </div>
+                    <label style="color: slategray" for="email">Email</label>
+                    <input class="form-control" type="email" id="email" placeholder="e.g. user@email.com" />
+                    <label style="color: slategray" for="pwd">Password</label>
+                    <input class="form-control" type="password" id="pwd" />
+                    <br />
+                    <button class="btn btn-primary" id="btnlogin">Login</button>&nbsp; &nbsp;
+                    <button class="btn" id="btnCreate">Create an account?</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+
 <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
 <script src="~/Scripts/myScript/login/login.js"></script>
+

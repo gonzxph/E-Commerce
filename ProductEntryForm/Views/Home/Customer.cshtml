@@ -12,29 +12,32 @@
     </style>
 </head>
 <body>
-    <h1>Customer Registration Form</h1>
-    <form id="registrationForm" oninput="pwd2.setCustomValidity(pwd2.value != pwd.value ? 'Password do not match.' : '')">
+    <button class="btn" id="btnBack">
+        <img src="~/Left.svg" style="border: none; width: 40px" />
+    </button>
+    <form id="registrationForm" style="margin-left: 320px" oninput="pwd2.setCustomValidity(pwd2.value != pwd.value ? 'Password do not match.' : '')">
+        <h1>Customer Registration Form</h1>
         <div class="container">
             <div class="form-container">
                 <div class="row">
                     <div class="col">
                         <div class="form-group">
                             <label for="fname">Firstname</label>
-                            <input class="form-control" type="text" id="fname" name="user_fname" />
+                            <input class="form-control" maxlength="35" type="text" id="fname" name="user_fname" required/>
                         </div>
                         <div class="form-group">
                             <label for="lname">Lastname</label>
-                            <input class="form-control" type="text" id="lname" name="user_lname" />
+                            <input class="form-control" maxlength="35" type="text" id="lname" name="user_lname" required/>
                         </div>
                         <div class="form-group">
                             <label for="phoneno">Phone Number</label>
-                            <input class="form-control" type="tel" id="phoneno" name="user_phoneno" />
+                            <input class="form-control" type="tel" maxlength="11" id="phoneno" name="user_phoneno" required/>
                         </div>
                     </div>
                     <div class="col">
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input class="form-control" type="email" id="email" name="user_email" required />
+                            <input class="form-control" maxlength="35" type="email" id="email" name="user_email" required />
                         </div>
                         <div class="form-group">
                             <label for="pwd">Password</label>
@@ -42,17 +45,18 @@
                         </div>
                         <div class="form-group">
                             <label for="pwd2">Confirm Password</label>
-                            <input class="form-control" type="password" id="pwd2" name="pwd2" />
+                            <input class="form-control" maxlength="35" type="password" id="pwd2" name="pwd2" />
                         </div>
                     </div>
                 </div>
                 <br />
-                <button type="submit" id="btnRegister" class="btn btn-primary mb-2">Register</button>
+                <button type="submit" id="btnRegister" maxlength="35" class="btn btn-primary mb-2">Register</button>
             </div>
         </div>
     </form>
 
-    <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
-    <script src="~/Scripts/myScript/login/register.js"></script>
+
 </body>
 </html>
+<script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
+<script src="~/Scripts/myScript/login/register.js"></script>

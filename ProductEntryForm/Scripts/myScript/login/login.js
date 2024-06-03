@@ -1,4 +1,8 @@
 ﻿$(document).ready(function () {
+    $('#btnCreate').click(function (event) {
+        event.preventDefault();
+        window.location.href = '../Home/Customer';
+    })
     $('#btnlogin').click(function (event) {
         event.preventDefault();
 
@@ -30,8 +34,5 @@
                 }
             });
         }
-
-
-        
     });
 });

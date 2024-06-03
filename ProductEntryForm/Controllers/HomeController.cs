@@ -76,6 +76,7 @@ namespace ProductEntryForm.Controllers
                     double prodWeight = Convert.ToDouble(Request["prodWeight"]);
                     string prodDimen = Request["prodDimen"];
                     int prodStock = Convert.ToInt32(Request["prodStock"]);
+
                     string image = Path.GetFileName(img.FileName);
                     string file_path = "C:\\Uploads";
                     string filepath = Path.Combine(file_path, image);
@@ -105,6 +106,7 @@ namespace ProductEntryForm.Controllers
                                 data.Add(new
                                 {
                                     mess = 1,
+                                    message = "Prodssuct Successfully Created"
                                 });
                             }
                         }
@@ -115,7 +117,7 @@ namespace ProductEntryForm.Controllers
                     // Invalid file extension
                     data.Add(new
                     {
-                        mess = 0,
+                        mess = 2,
                         message = "Invalid file type. Please upload an image with extensions: .jpg, .jpeg, .png, .gif"
                     });
                 }
@@ -125,7 +127,7 @@ namespace ProductEntryForm.Controllers
                 // No file uploaded
                 data.Add(new
                 {
-                    mess = 0,
+                    mess = 3,
                     message = "No file uploaded."
                 });
             }
@@ -424,23 +426,39 @@ namespace ProductEntryForm.Controllers
                 db.Open();
                 using (var cmd = db.CreateCommand())
                 {
+                    // Check if email already exists
                     cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = "INSERT INTO [USER] (USER_FNAME, USER_LNAME, USER_PHONE_NO, USER_EMAIL, USER_PASSWORD) " +
-                                      "VALUES (@USER_FNAME, @USER_LNAME, @USER_PHONE_NO, @USER_EMAIL, @USER_PASSWORD)";
-
-                    cmd.Parameters.AddWithValue("@USER_FNAME", fname);
-                    cmd.Parameters.AddWithValue("@USER_LNAME", lname);
-                    cmd.Parameters.AddWithValue("@USER_PHONE_NO", phoneno);
+                    cmd.CommandText = "SELECT COUNT(*) FROM [USER] WHERE USER_EMAIL = @USER_EMAIL";
                     cmd.Parameters.AddWithValue("@USER_EMAIL", email);
-                    cmd.Parameters.AddWithValue("@USER_PASSWORD", pwd);
 
-                    cmd.ExecuteNonQuery();
+                    int emailCount = (int)cmd.ExecuteScalar();
+
+                    if (emailCount > 0)
+                    {
+                        // Email already exists
+                        data.Add(new { mess = "Email already exists!" });
+                    }
+                    else
+                    {
+                        // Insert new user
+                        cmd.CommandText = "INSERT INTO [USER] (USER_FNAME, USER_LNAME, USER_PHONE_NO, USER_EMAIL, USER_PASSWORD) " +
+                                          "VALUES (@USER_FNAME, @USER_LNAME, @USER_PHONE_NO, @USER_EMAIL, @USER_PASSWORD)";
+
+                        cmd.Parameters.AddWithValue("@USER_FNAME", fname);
+                        cmd.Parameters.AddWithValue("@USER_LNAME", lname);
+                        cmd.Parameters.AddWithValue("@USER_PHONE_NO", phoneno);
+                        cmd.Parameters.AddWithValue("@USER_PASSWORD", pwd);
+
+                        cmd.ExecuteNonQuery();
+
+                        data.Add(new { mess = "User registered successfully!" });
+                    }
                 }
             }
 
-            data.Add(new { mess = "User registered successfully!" });
             return Json(data, JsonRequestBehavior.AllowGet);
         }
+
 
         [HttpPost]
         public ActionResult checkLogin()
