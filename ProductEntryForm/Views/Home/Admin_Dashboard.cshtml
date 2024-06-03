@@ -48,7 +48,7 @@
                                 <div class="col">
                                     <div class="form-group">
                                         <label for="name">Title</label>
-                                        <input type="text" maxlength="30" class="form-control" id="name" name="name" placeholder="" />
+                                        <input type="text" maxlength="100" class="form-control" id="name" name="name" placeholder="" />
                                     </div>
                                     <div class="form-group">
                                         <label for="descript">Book Description</label>
@@ -60,7 +60,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="weight">Weight</label>
-                                        <input type="text" maxlength="10" class="form-control" id="weight" name="weight">
+                                        <input type="text" maxlength="35" class="form-control" id="weight" name="weight">
                                     </div>
                                     <div class="form-group">
                                         <label for="img">Upload image</label>
@@ -73,7 +73,7 @@
                                         <input class="form-control" maxlength="10" type="number" id="price" name="price" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="pub">Publisher</label>
+                                        <label for="pub">Author</label>
                                         <input type="text" maxlength="35" class="form-control" id="pub" name="pub">
                                     </div>
                                     <div class="form-group">
@@ -81,8 +81,8 @@
                                         <input type="number" maxlength="10" class="form-control" id="page" name="page">
                                     </div>
                                     <div class="form-group">
-                                        <label for="demin">Dimensions (WxHxD)</label>
-                                        <input type="text" maxlength="10" class="form-control" id="dimen" name="dimen">
+                                        <label for="demin">Dimensions</label>
+                                        <input type="text" maxlength="35" class="form-control" id="dimen" name="dimen">
                                     </div>
                                     <div class="form-group">
                                         <label for="stock">Quantity</label>
@@ -118,7 +118,7 @@
                                     <input type="hidden" id="upid" />
                                     <div class="form-group">
                                         <label for="name">Title</label>
-                                        <input type="text" maxlength="30" class="form-control" id="upname" name="name" placeholder="" />
+                                        <input type="text" maxlength="100" class="form-control" id="upname" name="name" placeholder="" />
                                     </div>
                                     <div class="form-group">
                                         <label for="descript">Book Description</label>
@@ -130,7 +130,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="weight">Weight</label>
-                                        <input type="number" maxlength="10" class="form-control" id="upweight" name="weight">
+                                        <input type="text" maxlength="35" class="form-control" id="upweight" name="weight">
                                     </div>
                                     <div class="form-group">
                                         <label for="img">Upload image</label>
@@ -144,7 +144,7 @@
                                         <input class="form-control" maxlength="10" type="number" id="upprice" name="price" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="pub">Publisher</label>
+                                        <label for="pub">Author</label>
                                         <input type="text" maxlength="10" class="form-control" id="uppub" name="pub">
                                     </div>
                                     <div class="form-group">
@@ -152,8 +152,8 @@
                                         <input type="number" maxlength="10" class="form-control" id="uppage" name="page">
                                     </div>
                                     <div class="form-group">
-                                        <label for="demin">Dimensions (WxHxD)</label>
-                                        <input type="text" maxlength="10" class="form-control" id="updimen" name="dimen">
+                                        <label for="demin">Dimensions</label>
+                                        <input type="text" maxlength="35" class="form-control" id="updimen" name="dimen">
                                     </div>
                                     <div class="form-group">
                                         <label for="stock">Quantity</label>
@@ -218,7 +218,6 @@
                     cmd.CommandText = "SELECT * FROM PRODUCT";
                 }
 
-
                 using (var reader = cmd.ExecuteReader())
                 {
                     <table border="1" id="datatable" class="table table-bordered">
@@ -230,22 +229,27 @@
                                 <th width="10%">Image</th>
                                 <th width="10%">ISBN</th>
                                 <th width="5%">Page</th>
-                                <th width="10%">Publisher</th>
+                                <th width="10%">Author</th>
                                 <th width="10%">Weight</th>
                                 <th width="10%">Dimension</th>
                                 <th width="5%">Stock</th>
                                 <th width="5%">Price</th>
                                 <th width="5%">Action</th>
-
                             </tr>
                         </thead>
                         <tbody>
                             @while (reader.Read())
                             {
+                                var description = reader["PROD_DESCRIPTION"].ToString();
+                                if (description.Length > 100)
+                                {
+                                    description = description.Substring(0, 100) + "...";
+                                }
+
                                 <tr class="items">
                                     <td class="prod-id">@reader["PROD_ID"]</td>
                                     <td>@reader["PROD_NAME"]</td>
-                                    <td>@reader["PROD_DESCRIPTION"]</td>
+                                    <td>@description</td>
                                     <td style="text-align: center">
                                         <img src="../Home/Image?filename=@HttpUtility.UrlEncode(reader["PROD_IMAGE"] + "")" width="50%" />
                                     </td>
@@ -258,7 +262,6 @@
                                     <td>@reader["PROD_PRICE"]</td>
                                     <td><button type="button" class="btn btn-primary btn-up" data-bs-toggle="modal" data-bs-target="#updateModal">Update</button></td>
                                     <td><button class="btn btn-danger btn-del" id="btnDel" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button></td>
-
                                 </tr>
                             }
                         </tbody>
@@ -267,6 +270,7 @@
             }
         }
     }
+
 
     <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
     <script src="~/Scripts/myScript/deleteproduct.js"></script>

@@ -90,10 +90,10 @@ namespace ProductEntryForm.Controllers
                     string prodName = Request["prodName"];
                     double prodPrice = Convert.ToDouble(Request["prodPrice"]);
                     string prodDescript = Request["prodDescript"];
-                    int prodIsbn = Convert.ToInt32(Request["prodIsbn"]);
+                    string prodIsbn = Request["prodIsbn"];
                     string prodPub = Request["prodPub"];
                     int prodPage = Convert.ToInt32(Request["prodPage"]);
-                    double prodWeight = Convert.ToDouble(Request["prodWeight"]);
+                    string prodWeight = Request["prodWeight"];
                     string prodDimen = Request["prodDimen"];
                     int prodStock = Convert.ToInt32(Request["prodStock"]);
 
