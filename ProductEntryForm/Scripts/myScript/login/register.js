@@ -16,8 +16,12 @@
             processData: false,
             contentType: false,
             success: function (data) {
-                alert(data[0].mess);
-                window.location.href = '../Home/UserLogin';
+                if (data[0].mess == 1) {
+                    alert("User registered successfully!")
+                    window.location.href = '../Home/UserLogin';
+                } else {
+                    alert("Email already exists!")
+                }
             },
             error: function () {
                 alert('Error!');

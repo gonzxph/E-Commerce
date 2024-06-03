@@ -55,9 +55,14 @@
             processData: false,
             contentType: false,
             success: function (data) {
-                alert('Product updated successfully.');
+                if (data[0].mess == 1) {
+                    alert(data[0].message);
+                    location.reload()
+                } else if (data[0].mess == 2) {
+                    alert(data[0].message);
+                }
                 $('#updateModal').modal('hide');
-                location.reload()
+                
             },
             error: function () {
                 alert('Error saving changes.');

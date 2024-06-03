@@ -46,6 +46,11 @@ namespace ProductEntryForm.Controllers
             return View();
         }
 
+        public ActionResult EditProfile()
+        {
+            return View();
+        }
+
 
 
 
@@ -55,6 +60,21 @@ namespace ProductEntryForm.Controllers
         }
 
 
+        public ActionResult Logout()
+        {
+
+            Session.Clear();
+            Session.Abandon();
+
+
+            return RedirectToAction("UserLogin", "Home");
+        }
+
+
+
+
+
+
         [HttpPost]
         public ActionResult Product_Data(HttpPostedFileBase img)
         {
@@ -62,7 +82,7 @@ namespace ProductEntryForm.Controllers
 
             if (img != null && img.ContentLength > 0)
             {
-                // Check if the uploaded file is an image
+
                 string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
                 string fileExtension = Path.GetExtension(img.FileName);
                 if (allowedExtensions.Contains(fileExtension.ToLower()))
@@ -269,9 +289,78 @@ namespace ProductEntryForm.Controllers
             }
         }
 
-        [HttpPost]
-        public ActionResult PostProductUpdate()
+        [HttpGet]
+        public ActionResult getUser(int user_id)
         {
+            using (var db = new SqlConnection(connStr))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+                    cmd.CommandText = "SELECT * FROM [user] WHERE user_id = @user_id";
+                    cmd.Parameters.AddWithValue("@user_id", user_id);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+
+                            var user_data = new
+                            {
+                                fname = reader["user_fname"].ToString(),
+                                lname = reader["user_lname"].ToString(),
+                                phoneno = reader["user_phone_no"].ToString(),
+                                email = reader["user_email"].ToString(),
+                            };
+
+                            return Json(user_data, JsonRequestBehavior.AllowGet);
+                        }
+                        else
+                        {
+                            return Json(null, JsonRequestBehavior.AllowGet);
+                        }
+                    }
+                }
+            }
+        }
+
+        [HttpPost]
+        public ActionResult updateUser()
+        {
+            var fname = Request.Form["fname"];
+            var lname = Request.Form["lname"];
+            var phoneno = Request.Form["phoneno"];
+
+            using (var db = new SqlConnection(connStr))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandType = CommandType.Text;
+
+                    cmd.CommandText = @"UPDATE [user] SET 
+                                    USER_FNAME = @user_fname, 
+                                    USER_LNAME = @user_lname, 
+                                    USER_PHONE_NO = @user_phoneno";
+
+                    cmd.Parameters.AddWithValue("@user_fname", fname);
+                    cmd.Parameters.AddWithValue("@user_lname", lname);
+                    cmd.Parameters.AddWithValue("@user_phoneno", phoneno);
+
+                    var ctr = cmd.ExecuteNonQuery();
+                    var result = new { success = ctr > 0 };
+
+                    return Json(result, JsonRequestBehavior.AllowGet);
+                }
+            }
+        }
+
+        [HttpPost]
+        public ActionResult PostProductUpdate(HttpPostedFileBase insert_image)
+        {
+            var data = new List<object>();
+
             var prod_id = Request.Form["prod_id"];
             var prod_name = Request.Form["prod_name"];
             var prod_desc = Request.Form["prod_desc"];
@@ -282,7 +371,6 @@ namespace ProductEntryForm.Controllers
             var prod_dimen = Request.Form["prod_dimen"];
             var prod_stock = Request.Form["prod_stock"];
             var prod_page = Request.Form["prod_page"];
-            var insert_image = Request.Files["insert_image"];
 
             using (var db = new SqlConnection(connStr))
             {
@@ -292,30 +380,46 @@ namespace ProductEntryForm.Controllers
                     cmd.CommandType = CommandType.Text;
 
                     string updateQuery = @"UPDATE PRODUCT SET 
-                                    PROD_NAME = @prod_name, 
-                                    PROD_DESCRIPTION = @prod_desc, 
-                                    PROD_PRICE = @prod_price, 
-                                    PROD_ISBN = @prod_isbn, 
-                                    PROD_WEIGHT = @prod_weight, 
-                                    PROD_PUBLISHER = @prod_pub, 
-                                    PROD_DIMENSION = @prod_dimen, 
-                                    PROD_STOCK = @prod_stock, 
-                                    PROD_PAGE = @prod_page";
+                                PROD_NAME = @prod_name, 
+                                PROD_DESCRIPTION = @prod_desc, 
+                                PROD_PRICE = @prod_price, 
+                                PROD_ISBN = @prod_isbn, 
+                                PROD_WEIGHT = @prod_weight, 
+                                PROD_PUBLISHER = @prod_pub, 
+                                PROD_DIMENSION = @prod_dimen, 
+                                PROD_STOCK = @prod_stock, 
+                                PROD_PAGE = @prod_page";
 
+                    // Check if an image file is provided and is valid
                     if (insert_image != null && insert_image.ContentLength > 0)
                     {
-                        // Save file and update database
-                        var fileName = Path.GetFileName(insert_image.FileName);
-                        var filePath = Path.Combine(@"C:\Uploads", fileName); // Use the physical path
-                        insert_image.SaveAs(filePath);
+                        string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+                        string fileExtension = Path.GetExtension(insert_image.FileName);
 
-                        // Append the PROD_IMAGE field to the SQL command
-                        updateQuery += ", PROD_IMAGE = @prod_image";
-                        cmd.Parameters.AddWithValue("@prod_image", filePath); // Store the physical path in the database
+                        if (allowedExtensions.Contains(fileExtension.ToLower()))
+                        {
+                            string image = Path.GetFileName(insert_image.FileName);
+                            string file_path = "C:\\Uploads"; // Change this path as needed
+                            string filepath = Path.Combine(file_path, image);
+                            insert_image.SaveAs(filepath);
+
+                            // Append the PROD_IMAGE field to the SQL command if an image is provided
+                            updateQuery += ", PROD_IMAGE = @prod_image";
+                            cmd.Parameters.AddWithValue("@prod_image", image); // Store the image file name in the database
+                        }
+                        else
+                        {
+                            // Invalid file extension
+                            data.Add(new
+                            {
+                                mess = 2,
+                                message = "Invalid file type. Please upload an image with extensions: .jpg, .jpeg, .png, .gif"
+                            });
+                            return Json(data, JsonRequestBehavior.AllowGet);
+                        }
                     }
 
                     updateQuery += " WHERE PROD_ID = @prod_id";
-
                     cmd.CommandText = updateQuery;
 
                     // Add the parameters for the command
@@ -331,12 +435,21 @@ namespace ProductEntryForm.Controllers
                     cmd.Parameters.AddWithValue("@prod_stock", prod_stock);
 
                     var ctr = cmd.ExecuteNonQuery();
-                    var result = new { success = ctr > 0 };
-
-                    return Json(result, JsonRequestBehavior.AllowGet);
+                    if (ctr >= 1)
+                    {
+                        data.Add(new
+                        {
+                            mess = 1,
+                            message = "Product Update Successful"
+                        });
+                    }
                 }
             }
+
+            return Json(data, JsonRequestBehavior.AllowGet);
         }
+
+
 
 
         [HttpPost]
@@ -392,14 +505,11 @@ namespace ProductEntryForm.Controllers
             int userId = 0;
             if (Session["UserId"] != null)
             {
-                // Convert session value to int
                 userId = Convert.ToInt32(Session["UserId"]);
-                // Proceed with dashboard logic
                 return View();
             }
             else
             {
-                // Redirect to login if user is not logged in
                 return RedirectToAction("UserLogin");
             }
         }
@@ -426,7 +536,7 @@ namespace ProductEntryForm.Controllers
                 db.Open();
                 using (var cmd = db.CreateCommand())
                 {
-                    // Check if email already exists
+
                     cmd.CommandType = CommandType.Text;
                     cmd.CommandText = "SELECT COUNT(*) FROM [USER] WHERE USER_EMAIL = @USER_EMAIL";
                     cmd.Parameters.AddWithValue("@USER_EMAIL", email);
@@ -435,12 +545,12 @@ namespace ProductEntryForm.Controllers
 
                     if (emailCount > 0)
                     {
-                        // Email already exists
-                        data.Add(new { mess = "Email already exists!" });
+
+                        data.Add(new { mess = 0 });
                     }
                     else
                     {
-                        // Insert new user
+ 
                         cmd.CommandText = "INSERT INTO [USER] (USER_FNAME, USER_LNAME, USER_PHONE_NO, USER_EMAIL, USER_PASSWORD) " +
                                           "VALUES (@USER_FNAME, @USER_LNAME, @USER_PHONE_NO, @USER_EMAIL, @USER_PASSWORD)";
 
@@ -451,7 +561,7 @@ namespace ProductEntryForm.Controllers
 
                         cmd.ExecuteNonQuery();
 
-                        data.Add(new { mess = "User registered successfully!" });
+                        data.Add(new { mess = 1 });
                     }
                 }
             }
