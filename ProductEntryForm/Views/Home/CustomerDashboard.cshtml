@@ -66,100 +66,113 @@
     <button class="btn btn-light btn-image float-end" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
         <img src="~/Add Shopping Cart.svg" alt="Toggle right offcanvas" style="width:40px">
     </button>
-    <body>
-        <!-- Offcanvas -->
-        <div class="offcanvas offcanvas-end offcanvas-wider" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
-            <div class="offcanvas-header">
-                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"> </button>
-            </div>
-            <div class="offcanvas-body">
-                @{
-                    // Retrieve the user ID from the session
-                    var userId = Session["UserId"];
-                    if (userId != null)
+    <!-- Offcanvas -->
+    <div class="offcanvas offcanvas-end offcanvas-wider" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+        <div class="offcanvas-header">
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"> </button>
+        </div>
+        <div class="offcanvas-body">
+            @{
+                // Retrieve the user ID from the session
+                var userId = Session["UserId"];
+                if (userId != null)
+                {
+                    string conn1 = @"Data Source=localhost\mssqlserver04;Initial Catalog=student;Integrated Security=True";
+                    using (var db = new SqlConnection(conn1))
                     {
-                        string conn1 = @"Data Source=localhost\mssqlserver04;Initial Catalog=student;Integrated Security=True";
-                        using (var db = new SqlConnection(conn1))
+                        db.Open();
+                        using (var cmd = db.CreateCommand())
                         {
-                            db.Open();
-                            using (var cmd = db.CreateCommand())
+                            cmd.CommandType = CommandType.Text;
+                            cmd.CommandText = @"
+                                                                        SELECT
+                                                                            p.prod_id,
+                                                                            p.prod_name,
+                                                                            p.prod_image,
+                                                                            p.prod_stock,
+                                                                            c.cart_count,
+                                                                            p.prod_price,
+                                                                            c.cart_totalprice
+                                                                        FROM
+                                                                            CART c
+                                                                        JOIN
+                                                                            PRODUCT p
+                                                                        ON
+                                                                            c.prod_id = p.prod_id
+                                                                        WHERE
+                                                                            c.user_id = @user_id AND c.cart_count > 0";
+                            cmd.Parameters.AddWithValue("@user_id", userId);
+                            using (var reader = cmd.ExecuteReader())
                             {
-                                cmd.CommandType = CommandType.Text;
-                                cmd.CommandText = @"
-                                        SELECT
-                                            p.prod_id,
-                                            p.prod_name,
-                                            p.prod_image,
-                                            c.cart_count,
-                                            p.prod_price,
-                                            c.cart_totalprice
-                                        FROM
-                                            CART c
-                                        JOIN
-                                            PRODUCT p
-                                        ON
-                                            c.prod_id = p.prod_id
-                                        WHERE
-                                            c.user_id = @user_id AND c.cart_count > 1";
-                                cmd.Parameters.AddWithValue("@user_id", userId);
-                                using (var reader = cmd.ExecuteReader())
-                                {
-                                    <table border="1" id="datatable" class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th width="5%">Image</th>
-                                                <th width="10%">Product Name</th>
-                                                <th width="10%">Total Price</th>
-                                                <th width="10%">Quantity</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @while (reader.Read())
-                                            {
-                                                var prodId = reader["prod_id"].ToString();
-                                                var prodName = reader["prod_name"].ToString();
-                                                var prodImage = reader["prod_image"].ToString();
-                                                var cartCount = reader["cart_count"].ToString();
-                                                var totalPrice = reader["cart_totalprice"].ToString();
-                                                var prodPrice = reader["prod_price"].ToString();
-                                                <tr class="items">
-                                                    <td style="text-align: center">
-                                                        <img src="../Home/Image?filename=@HttpUtility.UrlEncode(prodImage)" width="50%" />
-                                                    </td>
-                                                    <td class="prod-id">@prodName</td>
-                                                    <td class="total-price">@totalPrice</td>
-                                                    <td>
-                                                        <div class="card-footer">
-                                                            <div class="d-flex align-items-center">
-                                                                <button class="quantity-button btn btn-outline-secondary" onclick="updateQuantity(this, -1, @prodPrice, @prodId)">-</button>
-                                                                <input class="quantity form-control mx-2" style="width: 60px; text-align: center;" min="0" name="quantity" value="@cartCount" type="number">
-                                                                <button class="quantity-button btn btn-outline-secondary" onclick="updateQuantity(this, 1, @prodPrice, @prodId)">+</button>
-                                                            </div>
-                                                            <button class="btn btn-danger ms-3 btndeleteitem" data-product-id="@prodId">Delete</button>
-
+                                <table border="1" id="datatable" class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th width="5%">Image</th>
+                                            <th width="10%">Product Name</th>
+                                            <th width="10%">Total Price</th>
+                                            <th width="10%">Quantity</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @while (reader.Read())
+                                        {
+                                            var stock = Convert.ToInt32(reader["prod_stock"]);
+                                            var prodId = reader["prod_id"].ToString();
+                                            var prodName = reader["prod_name"].ToString();
+                                            var prodImage = reader["prod_image"].ToString();
+                                            var cartCount = reader["cart_count"].ToString();
+                                            var itemTotalPrice = reader["cart_totalprice"].ToString();
+                                            var prodPrice = reader["prod_price"].ToString();
+                                            <tr class="items" data-stock="@stock" data-quantity="@cartCount">
+                                                <td style="text-align: center">
+                                                    <img src="../Home/Image?filename=@HttpUtility.UrlEncode(prodImage)" width="50%" />
+                                                </td>
+                                                <td class="prod-id">@prodName</td>
+                                                <td class="total-price">@itemTotalPrice</td>
+                                                <td>
+                                                    <div class="card-footer">
+                                                        <div class="d-flex align-items-center">
+                                                            <button class="quantity-button btn btn-outline-secondary" onclick="updateQuantity(this, -1, @prodPrice, @prodId)">-</button>
+                                                            <input class="quantity form-control mx-2" style="width: 60px; text-align: center;" min="0" name="quantity" value="@cartCount" type="number" oninput="updateQuantityDirect(this, @prodPrice, @prodId)">
+                                                            <button class="quantity-button btn btn-outline-secondary" onclick="updateQuantity(this, 1, @prodPrice, @prodId)">+</button>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                }
+                                                        <button class="btn btn-danger ms-3 btndeleteitem" data-product-id="@prodId" data-stock="@stock">Delete</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
                             }
+
+                            // Reset the command text for the total price query
+                            cmd.CommandText = "SELECT SUM(cart_totalprice) AS TotalPrice FROM cart WHERE user_id = @user_id";
+
+                            // Execute the total price query
+                            var totalCartPrice = cmd.ExecuteScalar();
+                            var totalCartPriceValue = (totalCartPrice != DBNull.Value) ? Convert.ToDecimal(totalCartPrice) : 0;
+
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>Total Price: @totalCartPriceValue</div>
+                                <div>
+                                    <button class="btn btn-primary btncheckout" data-user-id="@userId">Checkout</button>
+                                </div>
+                            </div>
                         }
                     }
-                    else
-                    {
-                        <p>User not logged in.</p>
-                    }
                 }
-            </div>
+                else
+                {
+                    <p>User not logged in.</p>
+                }
+            }
         </div>
+    </div>
 
 
-    </body>
+
     <h2>Customer Dashboard</h2>
     @{
-
         string conn = @"Data Source=localhost\mssqlserver04;Initial Catalog=student;Integrated Security=True";
         using (var db = new SqlConnection(conn))
         {
@@ -176,34 +189,80 @@
                             {
                                 var description = reader["PROD_DESCRIPTION"].ToString();
                                 var shortDescription = description.Length > 25 ? description.Substring(0, 25) + "..." : description;
+                                var stock = Convert.ToInt32(reader["PROD_STOCK"]);
+                                var prodId = reader["PROD_ID"].ToString();
+                                var prodName = reader["PROD_NAME"].ToString();
+                                var prodImage = reader["PROD_IMAGE"].ToString();
+                                var prodPrice = reader["PROD_PRICE"].ToString();
+                                var prodISBN = reader["PROD_ISBN"].ToString();
+                                var prodPublisher = reader["PROD_PUBLISHER"].ToString();
+                                var prodPage = reader["PROD_PAGE"].ToString();
+                                var prodWeight = reader["PROD_WEIGHT"].ToString();
+                                var prodDimension = reader["PROD_DIMENSION"].ToString();
+
                                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
                                     <div class="card m-2" style="width: 100%;">
-                                        <img src="../Home/Image?filename=@HttpUtility.UrlEncode(reader["PROD_IMAGE"] + "")" class="card-img-top" alt="...">
+                                        <img src="../Home/Image?filename=@HttpUtility.UrlEncode(prodImage)" class="card-img-top" alt="...">
                                         <div class="card-body">
-                                            <h5 class="card-title"><a href="">@reader["PROD_NAME"]</a></h5>
+                                            <h5 class="card-title">
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#productModal"
+                                                   data-prod-id="@prodId" data-prod-name="@prodName" data-prod-description="@description"
+                                                   data-prod-image="@prodImage" data-prod-isbn="@prodISBN" data-prod-publisher="@prodPublisher"
+                                                   data-prod-page="@prodPage" data-prod-weight="@prodWeight" data-prod-dimension="@prodDimension"
+                                                   data-prod-stock="@stock" data-prod-price="@prodPrice">
+                                                    @prodName
+                                                </a>
+                                            </h5>
                                             <p class="card-text">@shortDescription</p>
-                                            <p class="text-end">@reader["PROD_STOCK"] stock left</p>
+                                            <p class="text-end">@stock stock left</p>
                                             <div class="card-footer">
                                                 <div class="d-flex align-items-center">
                                                     <button class="quantity-button btn btn-outline-secondary" onclick="this.parentNode.querySelector('input[type=number]').stepDown()">-</button>
                                                     <input class="quantity form-control mx-2" style="width: 60px; text-align: center;" min="0" name="quantity" value="0" type="number">
                                                     <button class="quantity-button btn btn-outline-secondary" onclick="this.parentNode.querySelector('input[type=number]').stepUp()">+</button>
                                                 </div>
-                                                <button class="btn btn-primary ms-3 btnaddcart" data-product-id="@reader["PROD_ID"]">Add to Cart</button>
+                                                <button class="btn btn-primary ms-3 btnaddcart" data-product-id="@prodId" data-stock="@stock">Add to Cart</button>
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
                             }
                         </div>
                     </div>
-
                 }
             }
         }
-
     }
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalLabel">Product Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img id="modalImage" src="" class="img-fluid mb-3 d-block mx-auto" alt="Product Image" style="width: 200px;">
+                    <h5 id="modalName"></h5>
+                    <p id="modalDescription"></p>
+                    <p><strong>ISBN:</strong> <span id="modalISBN"></span></p>
+                    <p><strong>Publisher:</strong> <span id="modalPublisher"></span></p>
+                    <p><strong>Page Count:</strong> <span id="modalPage"></span></p>
+                    <p><strong>Weight:</strong> <span id="modalWeight"></span></p>
+                    <p><strong>Dimensions:</strong> <span id="modalDimension"></span></p>
+                    <p><strong>Stock:</strong> <span id="modalStock"></span></p>
+                    <p><strong>Price:</strong> $<span id="modalPrice"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </body>
 <script src="~/Scripts/jQuery/jquery-3.7.1.min.js"></script>
 <script src="~/Scripts/myScript/addtocart.js"></script>

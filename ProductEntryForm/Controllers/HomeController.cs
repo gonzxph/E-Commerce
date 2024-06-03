@@ -59,56 +59,80 @@ namespace ProductEntryForm.Controllers
         public ActionResult Product_Data(HttpPostedFileBase img)
         {
             var data = new List<object>();
-            string prodName = Request["prodName"];
-            double prodPrice = Convert.ToDouble(Request["prodPrice"]);
-            string prodDescript = Request["prodDescript"];
-            int prodIsbn = Convert.ToInt32(Request["prodIsbn"]);
-            string prodPub = Request["prodPub"];
-            int prodPage = Convert.ToInt32(Request["prodPage"]);
-            double prodWeight = Convert.ToDouble(Request["prodWeight"]);
-            string prodDimen = Request["prodDimen"];
-            int prodStock = Convert.ToInt32(Request["prodStock"]);
-            string image = Path.GetFileName(img.FileName);
-            string file_path = "C:\\Uploads";
-            string filepath = Path.Combine(file_path, image);
-            img.SaveAs(filepath);
 
-
-
-                using (var db = new SqlConnection(connStr))
+            if (img != null && img.ContentLength > 0)
+            {
+                // Check if the uploaded file is an image
+                string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
+                string fileExtension = Path.GetExtension(img.FileName);
+                if (allowedExtensions.Contains(fileExtension.ToLower()))
                 {
+                    string prodName = Request["prodName"];
+                    double prodPrice = Convert.ToDouble(Request["prodPrice"]);
+                    string prodDescript = Request["prodDescript"];
+                    int prodIsbn = Convert.ToInt32(Request["prodIsbn"]);
+                    string prodPub = Request["prodPub"];
+                    int prodPage = Convert.ToInt32(Request["prodPage"]);
+                    double prodWeight = Convert.ToDouble(Request["prodWeight"]);
+                    string prodDimen = Request["prodDimen"];
+                    int prodStock = Convert.ToInt32(Request["prodStock"]);
+                    string image = Path.GetFileName(img.FileName);
+                    string file_path = "C:\\Uploads";
+                    string filepath = Path.Combine(file_path, image);
+                    img.SaveAs(filepath);
 
-                    db.Open();
-                    using (var cmd = db.CreateCommand())
+                    using (var db = new SqlConnection(connStr))
                     {
-                    cmd.CommandType = CommandType.Text;
-                    cmd.CommandText = "INSERT INTO product (PROD_NAME, PROD_PRICE, PROD_DESCRIPTION, PROD_ISBN, PROD_PUBLISHER, PROD_PAGE, PROD_WEIGHT, PROD_DIMENSION, PROD_STOCK, [PROD_IMAGE]) VALUES (@PROD_NAME, @PROD_PRICE, @PROD_DESCRIPTION, @PROD_ISBN, @PROD_PUBLISHER, @PROD_PAGE, @PROD_WEIGHT, @PROD_DIMENSION, @PROD_STOCK, @PROD_IMAGE)";
-                    cmd.Parameters.AddWithValue("@PROD_NAME", prodName);
-                    cmd.Parameters.AddWithValue("@PROD_PRICE", prodPrice);
-                    cmd.Parameters.AddWithValue("@PROD_DESCRIPTION", prodDescript);
-                    cmd.Parameters.AddWithValue("@PROD_ISBN", prodIsbn);
-                    cmd.Parameters.AddWithValue("@PROD_PUBLISHER", prodPub);
-                    cmd.Parameters.AddWithValue("@PROD_PAGE", prodPage);
-                    cmd.Parameters.AddWithValue("@PROD_WEIGHT", prodWeight);
-                    cmd.Parameters.AddWithValue("@PROD_DIMENSION", prodDimen);
-                    cmd.Parameters.AddWithValue("@PROD_STOCK", prodStock);
-                    cmd.Parameters.AddWithValue("@PROD_IMAGE", image);
-
-                    var ctr = cmd.ExecuteNonQuery();
-                    if(ctr >= 1)
-                    {
-                        data.Add(new
+                        db.Open();
+                        using (var cmd = db.CreateCommand())
                         {
-                            mess = 1,
-                        }) ;
+                            cmd.CommandType = CommandType.Text;
+                            cmd.CommandText = "INSERT INTO product (PROD_NAME, PROD_PRICE, PROD_DESCRIPTION, PROD_ISBN, PROD_PUBLISHER, PROD_PAGE, PROD_WEIGHT, PROD_DIMENSION, PROD_STOCK, [PROD_IMAGE]) VALUES (@PROD_NAME, @PROD_PRICE, @PROD_DESCRIPTION, @PROD_ISBN, @PROD_PUBLISHER, @PROD_PAGE, @PROD_WEIGHT, @PROD_DIMENSION, @PROD_STOCK, @PROD_IMAGE)";
+                            cmd.Parameters.AddWithValue("@PROD_NAME", prodName);
+                            cmd.Parameters.AddWithValue("@PROD_PRICE", prodPrice);
+                            cmd.Parameters.AddWithValue("@PROD_DESCRIPTION", prodDescript);
+                            cmd.Parameters.AddWithValue("@PROD_ISBN", prodIsbn);
+                            cmd.Parameters.AddWithValue("@PROD_PUBLISHER", prodPub);
+                            cmd.Parameters.AddWithValue("@PROD_PAGE", prodPage);
+                            cmd.Parameters.AddWithValue("@PROD_WEIGHT", prodWeight);
+                            cmd.Parameters.AddWithValue("@PROD_DIMENSION", prodDimen);
+                            cmd.Parameters.AddWithValue("@PROD_STOCK", prodStock);
+                            cmd.Parameters.AddWithValue("@PROD_IMAGE", image);
+
+                            var ctr = cmd.ExecuteNonQuery();
+                            if (ctr >= 1)
+                            {
+                                data.Add(new
+                                {
+                                    mess = 1,
+                                });
+                            }
+                        }
                     }
-
                 }
-
-
+                else
+                {
+                    // Invalid file extension
+                    data.Add(new
+                    {
+                        mess = 0,
+                        message = "Invalid file type. Please upload an image with extensions: .jpg, .jpeg, .png, .gif"
+                    });
+                }
             }
+            else
+            {
+                // No file uploaded
+                data.Add(new
+                {
+                    mess = 0,
+                    message = "No file uploaded."
+                });
+            }
+
             return Json(data, JsonRequestBehavior.AllowGet);
         }
+
 
         public ActionResult DeleteProduct()
         {
@@ -522,11 +546,11 @@ namespace ProductEntryForm.Controllers
                             }
 
 
-                            cmd.CommandText = "UPDATE Product SET prod_stock = prod_stock - @quantity WHERE prod_id = @prod_id";
+                           /* cmd.CommandText = "UPDATE Product SET prod_stock = prod_stock - @quantity WHERE prod_id = @prod_id";
                             cmd.Parameters.AddWithValue("@quantity", quantity);
                             cmd.Parameters.AddWithValue("@prod_id", productId);
                             cmd.ExecuteNonQuery();
-                            cmd.Parameters.Clear(); 
+                            cmd.Parameters.Clear(); */
                         }
 
                         transaction.Commit();
@@ -615,60 +639,126 @@ namespace ProductEntryForm.Controllers
         [HttpPost]
         public ActionResult DeleteCartItem(int productId)
         {
-            try
+            var userId = Session["UserId"];
+            if (userId == null)
             {
-                using (var connection = new SqlConnection(connStr))
+                return Json(new { success = false, message = "User not logged in" });
+            }
+
+
+            using (var db = new SqlConnection(connStr))
+            {
+                db.Open();
+                using (var transaction = db.BeginTransaction())
                 {
-                    connection.Open();
-
-                    // Step 1: Get the cart item details to determine quantity
-                    string cartQuery = "SELECT * FROM CART WHERE prod_id = @productId";
-                    using (var cartCommand = new SqlCommand(cartQuery, connection))
+                    try
                     {
-                        cartCommand.Parameters.AddWithValue("@productId", productId);
-                        using (var cartReader = cartCommand.ExecuteReader())
+                        int cartQuantity;
+                        /*// Step 1: Retrieve the cart item details to determine quantity
+                        string cartQuery = "SELECT cart_count FROM CART WHERE user_id = @userId AND prod_id = @productId";
+                        using (var cartCommand = new SqlCommand(cartQuery, db, transaction))
                         {
-                            if (cartReader.Read())
-                            {
-                                int cartId = Convert.ToInt32(cartReader["cart_id"]);
-                                int cartQuantity = Convert.ToInt32(cartReader["cart_count"]);
+                            cartCommand.Parameters.AddWithValue("@userId", userId);
+                            cartCommand.Parameters.AddWithValue("@productId", productId);
+                            cartQuantity = (int)cartCommand.ExecuteScalar();
+                        }*/
 
-                                // Step 2: Delete the item from the cart
-                                string deleteCartQuery = "DELETE FROM CART WHERE cart_id = @cartId";
-                                using (var deleteCartCommand = new SqlCommand(deleteCartQuery, connection))
-                                {
-                                    deleteCartCommand.Parameters.AddWithValue("@cartId", cartId);
-                                    deleteCartCommand.ExecuteNonQuery();
-                                }
-
-                                // Step 3: Restore stock in the PRODUCT table
-                                string updateStockQuery = "UPDATE PRODUCT SET prod_stock = prod_stock + @cartQuantity WHERE prod_id = @productId";
-                                using (var updateStockCommand = new SqlCommand(updateStockQuery, connection))
-                                {
-                                    updateStockCommand.Parameters.AddWithValue("@cartQuantity", cartQuantity);
-                                    updateStockCommand.Parameters.AddWithValue("@productId", productId);
-                                    updateStockCommand.ExecuteNonQuery();
-                                }
-
-                                // If everything is successful, return success JSON
-                                return Json(new { success = true });
-                            }
-                            else
-                            {
-                                // Cart item not found, return error JSON
-                                return Json(new { success = false, error = "Cart item not found." });
-                            }
+                        // Step 2: Delete the item from the cart
+                        string deleteCartQuery = "DELETE FROM CART WHERE user_id = @userId AND prod_id = @productId";
+                        using (var deleteCartCommand = new SqlCommand(deleteCartQuery, db, transaction))
+                        {
+                            deleteCartCommand.Parameters.AddWithValue("@userId", userId);
+                            deleteCartCommand.Parameters.AddWithValue("@productId", productId);
+                            deleteCartCommand.ExecuteNonQuery();
                         }
+
+                        /*// Step 3: Restore stock in the PRODUCT table
+                        string updateStockQuery = "UPDATE PRODUCT SET prod_stock = prod_stock + @cartQuantity WHERE prod_id = @productId";
+                        using (var updateStockCommand = new SqlCommand(updateStockQuery, db, transaction))
+                        {
+                            updateStockCommand.Parameters.AddWithValue("@cartQuantity", cartQuantity);
+                            updateStockCommand.Parameters.AddWithValue("@productId", productId);
+                            updateStockCommand.ExecuteNonQuery();
+                        }*/
+
+                        // Commit the transaction
+                        transaction.Commit();
+                        return Json(new { success = true });
+                    }
+                    catch (Exception ex)
+                    {
+                        // Rollback the transaction if any operation fails
+                        transaction.Rollback();
+                        return Json(new { success = false, error = "An error occurred: " + ex.Message });
                     }
                 }
             }
-            catch (Exception ex)
+        }
+
+        [HttpPost]
+        public ActionResult Checkout(int userId)
+        {
+            if (Session["UserId"] == null )
             {
-                // Handle any exceptions here, return error JSON
-                Console.WriteLine("Error: " + ex.Message);
-                return Json(new { success = false, error = "An error occurred while processing the request." });
+                return Json(new { success = false, message = "User not logged in or session mismatch" });
+            }
+
+            using (var db = new SqlConnection(connStr))
+            {
+                db.Open();
+                using (var transaction = db.BeginTransaction())
+                {
+                    try
+                    {
+                        // Step 1: Retrieve all cart items for the user
+                        string cartQuery = "SELECT prod_id, cart_count FROM CART WHERE user_id = @userId";
+                        List<(int prodId, int cartCount)> cartItems = new List<(int, int)>();
+                        using (var cartCommand = new SqlCommand(cartQuery, db, transaction))
+                        {
+                            cartCommand.Parameters.AddWithValue("@userId", userId);
+                            using (var reader = cartCommand.ExecuteReader())
+                            {
+                                while (reader.Read())
+                                {
+                                    cartItems.Add((reader.GetInt32(0), reader.GetInt32(1)));
+                                }
+                            }
+                        }
+
+                        // Step 2: Update the stock for each product
+                        foreach (var item in cartItems)
+                        {
+                            string updateStockQuery = "UPDATE PRODUCT SET prod_stock = prod_stock - @cartCount WHERE prod_id = @prodId";
+                            using (var updateStockCommand = new SqlCommand(updateStockQuery, db, transaction))
+                            {
+                                updateStockCommand.Parameters.AddWithValue("@cartCount", item.cartCount);
+                                updateStockCommand.Parameters.AddWithValue("@prodId", item.prodId);
+                                updateStockCommand.ExecuteNonQuery();
+                            }
+                        }
+
+                        // Step 3: Delete all items from the cart
+                        string deleteCartQuery = "DELETE FROM CART WHERE user_id = @userId";
+                        using (var deleteCartCommand = new SqlCommand(deleteCartQuery, db, transaction))
+                        {
+                            deleteCartCommand.Parameters.AddWithValue("@userId", userId);
+                            deleteCartCommand.ExecuteNonQuery();
+                        }
+
+                        // Commit the transaction
+                        transaction.Commit();
+                        return Json(new { success = true });
+                    }
+                    catch (Exception ex)
+                    {
+                        // Rollback the transaction if any operation fails
+                        transaction.Rollback();
+                        return Json(new { success = false, error = "An error occurred: " + ex.Message });
+                    }
+                }
             }
         }
+
 
     }
 }
