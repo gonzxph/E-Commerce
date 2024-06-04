@@ -145,10 +145,10 @@
                                 </table>
                             }
 
-                            // Reset the command text for the total price query
+
                             cmd.CommandText = "SELECT SUM(cart_totalprice) AS TotalPrice FROM cart WHERE user_id = @user_id";
 
-                            // Execute the total price query
+
                             var totalCartPrice = cmd.ExecuteScalar();
                             var totalCartPriceValue = (totalCartPrice != DBNull.Value) ? Convert.ToDecimal(totalCartPrice) : 0;
 

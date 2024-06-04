@@ -24,7 +24,6 @@
 
             },
             error: function (error) {
-                // On error, display an alert
                 alert('Error deleting product: ' + error.responseText);
             }
         })

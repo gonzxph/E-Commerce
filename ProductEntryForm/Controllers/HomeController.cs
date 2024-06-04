@@ -57,7 +57,7 @@ namespace ProductEntryForm.Controllers
         public ActionResult Admin_Dashboard()
         {
             return View();
-        }
+        }       
 
 
         public ActionResult Logout()
@@ -134,7 +134,7 @@ namespace ProductEntryForm.Controllers
                 }
                 else
                 {
-                    // Invalid file extension
+
                     data.Add(new
                     {
                         mess = 2,
@@ -144,7 +144,6 @@ namespace ProductEntryForm.Controllers
             }
             else
             {
-                // No file uploaded
                 data.Add(new
                 {
                     mess = 3,
@@ -390,7 +389,6 @@ namespace ProductEntryForm.Controllers
                                 PROD_STOCK = @prod_stock, 
                                 PROD_PAGE = @prod_page";
 
-                    // Check if an image file is provided and is valid
                     if (insert_image != null && insert_image.ContentLength > 0)
                     {
                         string[] allowedExtensions = { ".jpg", ".jpeg", ".png", ".gif" };
@@ -399,17 +397,15 @@ namespace ProductEntryForm.Controllers
                         if (allowedExtensions.Contains(fileExtension.ToLower()))
                         {
                             string image = Path.GetFileName(insert_image.FileName);
-                            string file_path = "C:\\Uploads"; // Change this path as needed
+                            string file_path = "C:\\Uploads"; 
                             string filepath = Path.Combine(file_path, image);
                             insert_image.SaveAs(filepath);
 
-                            // Append the PROD_IMAGE field to the SQL command if an image is provided
                             updateQuery += ", PROD_IMAGE = @prod_image";
-                            cmd.Parameters.AddWithValue("@prod_image", image); // Store the image file name in the database
+                            cmd.Parameters.AddWithValue("@prod_image", image); 
                         }
                         else
                         {
-                            // Invalid file extension
                             data.Add(new
                             {
                                 mess = 2,
@@ -422,7 +418,6 @@ namespace ProductEntryForm.Controllers
                     updateQuery += " WHERE PROD_ID = @prod_id";
                     cmd.CommandText = updateQuery;
 
-                    // Add the parameters for the command
                     cmd.Parameters.AddWithValue("@prod_id", prod_id);
                     cmd.Parameters.AddWithValue("@prod_name", prod_name);
                     cmd.Parameters.AddWithValue("@prod_desc", prod_desc);
@@ -809,13 +804,13 @@ namespace ProductEntryForm.Controllers
                             updateStockCommand.ExecuteNonQuery();
                         }*/
 
-                        // Commit the transaction
+
                         transaction.Commit();
                         return Json(new { success = true });
                     }
                     catch (Exception ex)
                     {
-                        // Rollback the transaction if any operation fails
+
                         transaction.Rollback();
                         return Json(new { success = false, error = "An error occurred: " + ex.Message });
                     }
@@ -838,7 +833,7 @@ namespace ProductEntryForm.Controllers
                 {
                     try
                     {
-                        // Step 1: Retrieve all cart items for the user
+
                         string cartQuery = "SELECT prod_id, cart_count FROM CART WHERE user_id = @userId";
                         List<(int prodId, int cartCount)> cartItems = new List<(int, int)>();
                         using (var cartCommand = new SqlCommand(cartQuery, db, transaction))
@@ -853,7 +848,7 @@ namespace ProductEntryForm.Controllers
                             }
                         }
 
-                        // Step 2: Update the stock for each product
+
                         foreach (var item in cartItems)
                         {
                             string updateStockQuery = "UPDATE PRODUCT SET prod_stock = prod_stock - @cartCount WHERE prod_id = @prodId";
@@ -865,7 +860,6 @@ namespace ProductEntryForm.Controllers
                             }
                         }
 
-                        // Step 3: Delete all items from the cart
                         string deleteCartQuery = "DELETE FROM CART WHERE user_id = @userId";
                         using (var deleteCartCommand = new SqlCommand(deleteCartQuery, db, transaction))
                         {
@@ -873,13 +867,11 @@ namespace ProductEntryForm.Controllers
                             deleteCartCommand.ExecuteNonQuery();
                         }
 
-                        // Commit the transaction
                         transaction.Commit();
                         return Json(new { success = true });
                     }
                     catch (Exception ex)
                     {
-                        // Rollback the transaction if any operation fails
                         transaction.Rollback();
                         return Json(new { success = false, error = "An error occurred: " + ex.Message });
                     }

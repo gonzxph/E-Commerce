@@ -209,7 +209,7 @@
                 }
                 else if (!string.IsNullOrEmpty(searchQuery))
                 {
-                    // If searchQuery is not an integer, search by name (partial match)
+
                     cmd.CommandText = "SELECT * FROM product WHERE prod_name LIKE @searchName";
                     cmd.Parameters.AddWithValue("@searchName", "%" + searchQuery + "%");
                 }

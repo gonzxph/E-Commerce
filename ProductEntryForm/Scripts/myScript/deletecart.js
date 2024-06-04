@@ -9,7 +9,6 @@
                     data: { productId: productId },
                     success: function (response) {
                         if (response.success) {
-                            // Reload or update the cart view after deletion
                             window.location.reload();
                         } else {
                             alert(response.error);
@@ -40,7 +39,7 @@ $(document).ready(function () {
             if (quantity <= 0 || quantity > stock) {
                 allValid = false;
                 alert('Quantity for ' + $(this).find('.prod-id').text() + ' is invalid. Please ensure it is greater than 0 and less than or equal to stock.');
-                return false; // Break out of the loop
+                return false; 
             }
         });
 
@@ -55,7 +54,7 @@ $(document).ready(function () {
                     success: function (response) {
                         if (response.success) {
                             alert("Checkout successful!");
-                            window.location.reload(); // Reload the page after successful checkout
+                            window.location.reload(); 
                         } else {
                             alert(response.error);
                         }
@@ -71,8 +70,5 @@ $(document).ready(function () {
         }
     });
 
-    // Other code...
 });
 
-
-////
